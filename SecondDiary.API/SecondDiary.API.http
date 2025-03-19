@@ -1,0 +1,6 @@
+@SecondDiary.API_HostAddress = http://localhost:5108
+
+GET {{SecondDiary.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
