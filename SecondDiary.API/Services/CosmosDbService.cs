@@ -31,8 +31,8 @@ namespace SecondDiary.API.Services
 
         public async Task<DiaryEntry> CreateEntryAsync(DiaryEntry entry)
         {
-            // Encrypt the thought before storing
-            entry.EncryptedThought = _encryptionService.Encrypt(entry.Thought);
+            // Encrypt the thought before storing (only if it's not null)
+            entry.EncryptedThought = entry.Thought != null ? _encryptionService.Encrypt(entry.Thought) : null;
             entry.Thought = null; // Clear the plain text thought
 
             var response = await _container.CreateItemAsync(entry, new PartitionKey(entry.UserId));
@@ -48,8 +48,11 @@ namespace SecondDiary.API.Services
                     new PartitionKey(userId));
 
                 var entry = response.Resource;
-                // Decrypt the thought before returning
-                entry.Thought = _encryptionService.Decrypt(entry.EncryptedThought);
+                // Decrypt the thought before returning (only if encrypted thought exists)
+                if (entry.EncryptedThought != null)
+                {
+                    entry.Thought = _encryptionService.Decrypt(entry.EncryptedThought);
+                }
                 return entry;
             }
             catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
@@ -71,8 +74,11 @@ namespace SecondDiary.API.Services
                 var response = await iterator.ReadNextAsync();
                 foreach (var entry in response)
                 {
-                    // Decrypt the thought before returning
-                    entry.Thought = _encryptionService.Decrypt(entry.EncryptedThought);
+                    // Decrypt the thought before returning (only if encrypted thought exists)
+                    if (entry.EncryptedThought != null)
+                    {
+                        entry.Thought = _encryptionService.Decrypt(entry.EncryptedThought);
+                    }
                     entries.Add(entry);
                 }
             }
@@ -82,8 +88,8 @@ namespace SecondDiary.API.Services
 
         public async Task<DiaryEntry> UpdateEntryAsync(DiaryEntry entry)
         {
-            // Encrypt the thought before storing
-            entry.EncryptedThought = _encryptionService.Encrypt(entry.Thought);
+            // Encrypt the thought before storing (only if it's not null)
+            entry.EncryptedThought = entry.Thought != null ? _encryptionService.Encrypt(entry.Thought) : null;
             entry.Thought = null; // Clear the plain text thought
 
             var response = await _container.UpsertItemAsync(entry, new PartitionKey(entry.UserId));
@@ -97,4 +103,4 @@ namespace SecondDiary.API.Services
                 new PartitionKey(userId));
         }
     }
-} 
+}

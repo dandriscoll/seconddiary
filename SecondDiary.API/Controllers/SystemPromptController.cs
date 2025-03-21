@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,8 +18,8 @@ namespace SecondDiary.API.Controllers
             ISystemPromptService systemPromptService,
             IWebHostEnvironment environment)
         {
-            _systemPromptService = systemPromptService;
-            _environment = environment;
+            _systemPromptService = systemPromptService ?? throw new ArgumentNullException(nameof(systemPromptService));
+            _environment = environment ?? throw new ArgumentNullException(nameof(environment));
         }
 
         [HttpGet]
@@ -29,7 +30,7 @@ namespace SecondDiary.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> SetSystemPrompt([FromBody] string newPrompt)
+        public async Task<IActionResult> SetSystemPrompt([FromBody] string? newPrompt)
         {
             if (string.IsNullOrEmpty(newPrompt))
             {
@@ -41,7 +42,7 @@ namespace SecondDiary.API.Controllers
         }
 
         [HttpPost("append")]
-        public async Task<IActionResult> AppendToSystemPrompt([FromBody] string additionalPrompt)
+        public async Task<IActionResult> AppendToSystemPrompt([FromBody] string? additionalPrompt)
         {
             if (string.IsNullOrEmpty(additionalPrompt))
             {

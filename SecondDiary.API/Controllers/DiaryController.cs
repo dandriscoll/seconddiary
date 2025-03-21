@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -29,7 +31,12 @@ namespace SecondDiary.API.Controllers
                 return "development-user";
             }
 
-            return User.Identity?.Name ?? throw new UnauthorizedAccessException("User not authenticated");
+            var userName = User.Identity?.Name;
+            if (string.IsNullOrEmpty(userName))
+            {
+                throw new UnauthorizedAccessException("User not authenticated");
+            }
+            return userName;
         }
 
         [HttpPost]
