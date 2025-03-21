@@ -3,13 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 namespace SecondDiary.API.Controllers
 {
     [ApiController]
-    [Route("/")]
     public class HomeController : ControllerBase
     {
         [HttpGet]
+        [Route("{*path:nonfile}")]
         public IActionResult Index()
         {
-            // This will be handled by the SPA fallback
+            // This handles SPA fallback routing
             return File("~/index.html", "text/html");
         }
     }

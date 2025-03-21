@@ -4,7 +4,7 @@
   "source": "src/index.html",
   "scripts": {
     "start": "parcel",
-    "build": "parcel build --dist-dir ../wwwroot"
+    "build": "parcel build --dist-dir ../wwwroot --public-url /"
   },
   "dependencies": {
     "react": "^18.2.0",

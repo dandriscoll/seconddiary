@@ -9,7 +9,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Web;
+using System.IO;
 
 namespace SecondDiary.API
 {
@@ -95,7 +97,7 @@ namespace SecondDiary.API
             services.AddAuthorization();
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
         {
             if (env.IsDevelopment())
             {
@@ -105,6 +107,21 @@ namespace SecondDiary.API
             }
 
             app.UseHttpsRedirection();
+            
+            // Default static files middleware
+            app.UseStaticFiles();
+            
+            // Add ClientApp static files with correct path mapping
+            var clientAppPath = Path.Combine(Directory.GetCurrentDirectory(), "ClientApp/dist");
+            if (Directory.Exists(clientAppPath))
+            {
+                app.UseStaticFiles(new StaticFileOptions
+                {
+                    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(clientAppPath),
+                    RequestPath = "/ClientApp/dist"
+                });
+            }
+            
             app.UseRouting();
 
             // Add authentication middleware
@@ -114,6 +131,7 @@ namespace SecondDiary.API
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapFallbackToFile("index.html");
             });
         }
     }
