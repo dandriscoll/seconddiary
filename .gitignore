@@ -216,3 +216,31 @@ FodyWeavers.xsd
 # Sensitive configuration files
 **/appsettings.json
 !**/appsettings.json.template
+
+# Node.js / JavaScript
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+.pnpm-debug.log
+.npm
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Parcel bundler
+.parcel-cache/
+.cache/
+dist/
+
+# Client app build output
+SecondDiary.API/wwwroot/dist/
+SecondDiary.API/wwwroot/*.js
+SecondDiary.API/wwwroot/*.css
+SecondDiary.API/wwwroot/*.html
+SecondDiary.API/wwwroot/*.map

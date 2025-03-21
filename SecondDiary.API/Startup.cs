@@ -4,6 +4,12 @@ using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using SecondDiary.API.Models;
 using SecondDiary.API.Services;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Identity.Web;
 
 namespace SecondDiary.API
 {
@@ -18,6 +24,23 @@ namespace SecondDiary.API
 
         public void ConfigureServices(IServiceCollection services)
         {
+            // Configure JWT authentication
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.Authority = $"https://login.microsoftonline.com/{Configuration["AzureAd:TenantId"]}/v2.0";
+                    options.Audience = Configuration["AzureAd:ClientId"];
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = $"https://login.microsoftonline.com/{Configuration["AzureAd:TenantId"]}/v2.0",
+                        ValidAudience = Configuration["AzureAd:ClientId"]
+                    };
+                });
+
             services.AddControllers()
                 .AddNewtonsoftJson(options =>
                 {
@@ -67,6 +90,9 @@ namespace SecondDiary.API
             // Register services with their interfaces
             services.AddSingleton<IDiaryService, DiaryService>();
             services.AddSingleton<ISystemPromptService, SystemPromptService>();
+
+            // Add authorization policies if needed
+            services.AddAuthorization();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -80,6 +106,9 @@ namespace SecondDiary.API
 
             app.UseHttpsRedirection();
             app.UseRouting();
+
+            // Add authentication middleware
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
