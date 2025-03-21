@@ -11,5 +11,14 @@
       "ClientId": "your-client-id-here",
       "ClientSecret": "your-client-secret-here"
     }
+  },
+  "CosmosDb": {
+    "Endpoint": "your-cosmos-db-endpoint",
+    "Key": "your-cosmos-db-key",
+    "DatabaseName": "SecondDiary",
+    "ContainerName": "DiaryEntries"
+  },
+  "Encryption": {
+    "Key": "your-32-byte-encryption-key-here"
   }
 } 

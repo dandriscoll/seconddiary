@@ -4,6 +4,10 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
+using SecondDiary.API.Models;
 using SecondDiary.API.Services;
 
 namespace SecondDiary.API
@@ -19,18 +23,31 @@ namespace SecondDiary.API
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
+            services.AddControllers()
+                .AddNewtonsoftJson(options =>
+                {
+                    options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+                    options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+                });
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
 
-            string? clientId = Configuration["Authentication:Microsoft:ClientId"];
-            string? clientSecret = Configuration["Authentication:Microsoft:ClientSecret"];
+            // Configure Cosmos DB
+            services.Configure<CosmosDbSettings>(Configuration.GetSection("CosmosDb"));
+            services.AddSingleton<ICosmosDbService, CosmosDbService>();
+
+            // Configure Encryption Service
+            services.AddSingleton<IEncryptionService, EncryptionService>();
+
+            // Configure Microsoft Account Authentication
+            var clientId = Configuration["Authentication:Microsoft:ClientId"];
+            var clientSecret = Configuration["Authentication:Microsoft:ClientSecret"];
 
             if (!string.IsNullOrEmpty(clientId) && !string.IsNullOrEmpty(clientSecret))
             {
                 services.AddAuthentication(options =>
                 {
-                    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                     options.DefaultChallengeScheme = MicrosoftAccountDefaults.AuthenticationScheme;
                 })
                 .AddMicrosoftAccount(options =>
@@ -38,11 +55,23 @@ namespace SecondDiary.API
                     options.ClientId = clientId;
                     options.ClientSecret = clientSecret;
                 })
-                .AddJwtBearer();
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = "https://login.microsoftonline.com/common/v2.0",
+                        ValidAudience = clientId
+                    };
+                });
             }
 
-            services.AddSingleton<DiaryService>();
-            services.AddSingleton<SystemPromptService>();
+            // Register services with their interfaces
+            services.AddSingleton<IDiaryService, DiaryService>();
+            services.AddSingleton<ISystemPromptService, SystemPromptService>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -54,7 +83,13 @@ namespace SecondDiary.API
             }
 
             app.UseHttpsRedirection();
-            app.UseAuthentication();
+
+            var clientId = Configuration["Authentication:Microsoft:ClientId"];
+            if (!string.IsNullOrEmpty(clientId))
+            {
+                app.UseAuthentication();
+            }
+
             app.UseRouting();
             app.UseAuthorization();
             app.UseEndpoints(endpoints =>

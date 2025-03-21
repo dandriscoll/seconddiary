@@ -10,10 +10,12 @@ namespace SecondDiary.API.Controllers
     [Route("api/[controller]")]
     public class SystemPromptController : ControllerBase
     {
-        private readonly SystemPromptService _systemPromptService;
+        private readonly ISystemPromptService _systemPromptService;
         private readonly IWebHostEnvironment _environment;
 
-        public SystemPromptController(SystemPromptService systemPromptService, IWebHostEnvironment environment)
+        public SystemPromptController(
+            ISystemPromptService systemPromptService,
+            IWebHostEnvironment environment)
         {
             _systemPromptService = systemPromptService;
             _environment = environment;

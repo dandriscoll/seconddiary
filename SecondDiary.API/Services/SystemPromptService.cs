@@ -3,7 +3,14 @@ using System.Threading.Tasks;
 
 namespace SecondDiary.API.Services
 {
-    public class SystemPromptService
+    public interface ISystemPromptService
+    {
+        Task<string> GetSystemPromptAsync();
+        Task SetSystemPromptAsync(string newPrompt);
+        Task AppendToSystemPromptAsync(string additionalPrompt);
+    }
+
+    public class SystemPromptService : ISystemPromptService
     {
         private string _systemPrompt = "You are a helpful AI assistant that provides thoughtful recommendations based on diary entries.";
 
