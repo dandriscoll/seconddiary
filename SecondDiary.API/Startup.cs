@@ -52,8 +52,8 @@ namespace SecondDiary.API
             services.AddSingleton<IEncryptionService, EncryptionService>();
 
             // Configure Microsoft Account Authentication
-            string clientId = Configuration["Authentication:Microsoft:ClientId"];
-            string clientSecret = Configuration["Authentication:Microsoft:ClientSecret"];
+            string? clientId = Configuration["Authentication:Microsoft:ClientId"];
+            string? clientSecret = Configuration["Authentication:Microsoft:ClientSecret"];
 
             if (!string.IsNullOrEmpty(clientId) && !string.IsNullOrEmpty(clientSecret))
             {

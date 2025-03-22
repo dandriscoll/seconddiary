@@ -16,7 +16,7 @@ namespace SecondDiary.API.Services
 
         public EncryptionService(IConfiguration configuration)
         {
-            string encryptionKey = configuration["Encryption:Key"];
+            string? encryptionKey = configuration["Encryption:Key"];
             if (string.IsNullOrEmpty(encryptionKey))
                 throw new InvalidOperationException("Encryption key is not configured");
 
