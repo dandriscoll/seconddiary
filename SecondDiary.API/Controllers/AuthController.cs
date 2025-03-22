@@ -1,9 +1,6 @@
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace SecondDiary.API.Controllers
 {
@@ -16,9 +13,7 @@ namespace SecondDiary.API.Controllers
         public IActionResult GetCurrentUser()
         {
             if (User.Identity == null || !User.Identity.IsAuthenticated)
-            {
                 return Unauthorized(new { message = "User identity not available or not authenticated" });
-            }
 
             return Ok(new
             {

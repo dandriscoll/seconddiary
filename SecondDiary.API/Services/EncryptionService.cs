@@ -1,6 +1,5 @@
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.Extensions.Configuration;
 
 namespace SecondDiary.API.Services
 {
@@ -17,11 +16,9 @@ namespace SecondDiary.API.Services
 
         public EncryptionService(IConfiguration configuration)
         {
-            var encryptionKey = configuration["Encryption:Key"];
+            string encryptionKey = configuration["Encryption:Key"];
             if (string.IsNullOrEmpty(encryptionKey))
-            {
                 throw new InvalidOperationException("Encryption key is not configured");
-            }
 
             // Convert the key to bytes and ensure it's 32 bytes (256 bits)
             _key = Encoding.UTF8.GetBytes(encryptionKey.PadRight(32).Substring(0, 32));
@@ -33,13 +30,13 @@ namespace SecondDiary.API.Services
             if (string.IsNullOrEmpty(plainText))
                 return plainText;
 
-            using var aes = Aes.Create();
+            using Aes aes = Aes.Create();
             aes.Key = _key;
             aes.IV = _iv;
 
-            using var encryptor = aes.CreateEncryptor();
-            var plainBytes = Encoding.UTF8.GetBytes(plainText);
-            var cipherBytes = encryptor.TransformFinalBlock(plainBytes, 0, plainBytes.Length);
+            using ICryptoTransform encryptor = aes.CreateEncryptor();
+            byte[] plainBytes = Encoding.UTF8.GetBytes(plainText);
+            byte[] cipherBytes = encryptor.TransformFinalBlock(plainBytes, 0, plainBytes.Length);
             return Convert.ToBase64String(cipherBytes);
         }
 
@@ -48,14 +45,14 @@ namespace SecondDiary.API.Services
             if (string.IsNullOrEmpty(cipherText))
                 return cipherText;
 
-            using var aes = Aes.Create();
+            using Aes aes = Aes.Create();
             aes.Key = _key;
             aes.IV = _iv;
 
-            using var decryptor = aes.CreateDecryptor();
-            var cipherBytes = Convert.FromBase64String(cipherText);
-            var plainBytes = decryptor.TransformFinalBlock(cipherBytes, 0, cipherBytes.Length);
+            using ICryptoTransform decryptor = aes.CreateDecryptor();
+            byte[] cipherBytes = Convert.FromBase64String(cipherText);
+            byte[] plainBytes = decryptor.TransformFinalBlock(cipherBytes, 0, cipherBytes.Length);
             return Encoding.UTF8.GetString(plainBytes);
         }
     }
-} 
+}

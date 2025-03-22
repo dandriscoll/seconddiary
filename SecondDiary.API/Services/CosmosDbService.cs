@@ -23,7 +23,7 @@ namespace SecondDiary.API.Services
             IOptions<CosmosDbSettings> cosmosDbSettings,
             IEncryptionService encryptionService)
         {
-            var settings = cosmosDbSettings.Value;
+            CosmosDbSettings settings = cosmosDbSettings.Value;
             _cosmosClient = new CosmosClient(settings.Endpoint, settings.Key);
             _container = _cosmosClient.GetContainer(settings.DatabaseName, settings.ContainerName);
             _encryptionService = encryptionService;
@@ -35,7 +35,7 @@ namespace SecondDiary.API.Services
             entry.EncryptedThought = entry.Thought != null ? _encryptionService.Encrypt(entry.Thought) : null;
             entry.Thought = null; // Clear the plain text thought
 
-            var response = await _container.CreateItemAsync(entry, new PartitionKey(entry.UserId));
+            ItemResponse<DiaryEntry> response = await _container.CreateItemAsync(entry, new PartitionKey(entry.UserId));
             return response.Resource;
         }
 
@@ -43,16 +43,14 @@ namespace SecondDiary.API.Services
         {
             try
             {
-                var response = await _container.ReadItemAsync<DiaryEntry>(
+                ItemResponse<DiaryEntry> response = await _container.ReadItemAsync<DiaryEntry>(
                     id,
                     new PartitionKey(userId));
 
-                var entry = response.Resource;
+                DiaryEntry entry = response.Resource;
                 // Decrypt the thought before returning (only if encrypted thought exists)
                 if (entry.EncryptedThought != null)
-                {
                     entry.Thought = _encryptionService.Decrypt(entry.EncryptedThought);
-                }
                 return entry;
             }
             catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
@@ -63,22 +61,20 @@ namespace SecondDiary.API.Services
 
         public async Task<IEnumerable<DiaryEntry>> GetEntriesAsync(string userId)
         {
-            var query = new QueryDefinition("SELECT * FROM c WHERE c.userId = @userId")
+            QueryDefinition query = new QueryDefinition("SELECT * FROM c WHERE c.userId = @userId")
                 .WithParameter("@userId", userId);
 
-            var iterator = _container.GetItemQueryIterator<DiaryEntry>(query);
-            var entries = new List<DiaryEntry>();
+            FeedIterator<DiaryEntry> iterator = _container.GetItemQueryIterator<DiaryEntry>(query);
+            List<DiaryEntry> entries = new List<DiaryEntry>();
 
             while (iterator.HasMoreResults)
             {
-                var response = await iterator.ReadNextAsync();
-                foreach (var entry in response)
+                FeedResponse<DiaryEntry> response = await iterator.ReadNextAsync();
+                foreach (DiaryEntry entry in response)
                 {
                     // Decrypt the thought before returning (only if encrypted thought exists)
                     if (entry.EncryptedThought != null)
-                    {
                         entry.Thought = _encryptionService.Decrypt(entry.EncryptedThought);
-                    }
                     entries.Add(entry);
                 }
             }
@@ -92,7 +88,7 @@ namespace SecondDiary.API.Services
             entry.EncryptedThought = entry.Thought != null ? _encryptionService.Encrypt(entry.Thought) : null;
             entry.Thought = null; // Clear the plain text thought
 
-            var response = await _container.UpsertItemAsync(entry, new PartitionKey(entry.UserId));
+            ItemResponse<DiaryEntry> response = await _container.UpsertItemAsync(entry, new PartitionKey(entry.UserId));
             return response.Resource;
         }
 

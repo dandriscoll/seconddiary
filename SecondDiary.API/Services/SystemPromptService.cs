@@ -1,6 +1,3 @@
-using System;
-using System.Threading.Tasks;
-
 namespace SecondDiary.API.Services
 {
     public interface ISystemPromptService

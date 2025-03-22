@@ -29,9 +29,7 @@ namespace SecondDiary.API.Controllers
         public async Task<IActionResult> SetSystemPrompt([FromBody] string? newPrompt)
         {
             if (string.IsNullOrEmpty(newPrompt))
-            {
                 return BadRequest("System prompt cannot be empty");
-            }
 
             await _systemPromptService.SetSystemPromptAsync(newPrompt);
             return Ok();
@@ -41,12 +39,10 @@ namespace SecondDiary.API.Controllers
         public async Task<IActionResult> AppendToSystemPrompt([FromBody] string? additionalPrompt)
         {
             if (string.IsNullOrEmpty(additionalPrompt))
-            {
                 return BadRequest("Additional prompt cannot be empty");
-            }
 
             await _systemPromptService.AppendToSystemPromptAsync(additionalPrompt);
             return Ok();
         }
     }
-} 
+}

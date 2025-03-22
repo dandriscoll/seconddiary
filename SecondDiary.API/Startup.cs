@@ -4,14 +4,6 @@ using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using SecondDiary.API.Models;
 using SecondDiary.API.Services;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Identity.Web;
-using System.IO;
 
 namespace SecondDiary.API
 {
@@ -60,8 +52,8 @@ namespace SecondDiary.API
             services.AddSingleton<IEncryptionService, EncryptionService>();
 
             // Configure Microsoft Account Authentication
-            var clientId = Configuration["Authentication:Microsoft:ClientId"];
-            var clientSecret = Configuration["Authentication:Microsoft:ClientSecret"];
+            string clientId = Configuration["Authentication:Microsoft:ClientId"];
+            string clientSecret = Configuration["Authentication:Microsoft:ClientSecret"];
 
             if (!string.IsNullOrEmpty(clientId) && !string.IsNullOrEmpty(clientSecret))
             {
@@ -112,7 +104,7 @@ namespace SecondDiary.API
             app.UseStaticFiles();
             
             // Add ClientApp static files with correct path mapping
-            var clientAppPath = Path.Combine(Directory.GetCurrentDirectory(), "ClientApp/dist");
+            string clientAppPath = Path.Combine(Directory.GetCurrentDirectory(), "ClientApp/dist");
             if (Directory.Exists(clientAppPath))
             {
                 app.UseStaticFiles(new StaticFileOptions
