@@ -14,7 +14,7 @@ namespace SecondDiary.Tests.Services
         public EncryptionServiceTests()
         {
             // Setup mock configuration
-            var mockConfiguration = new Mock<IConfiguration>();
+            Mock<IConfiguration> mockConfiguration = new Mock<IConfiguration>();
             mockConfiguration.Setup(c => c["Encryption:Key"]).Returns(_testKey);
 
             // Create the service with mock configuration
@@ -78,7 +78,7 @@ namespace SecondDiary.Tests.Services
         public void EncryptionService_WithMissingKey_ThrowsException()
         {
             // Arrange
-            var mockConfiguration = new Mock<IConfiguration>();
+            Mock<IConfiguration> mockConfiguration = new Mock<IConfiguration>();
             mockConfiguration.Setup(c => c["Encryption:Key"]).Returns((string?)null);
 
             // Act & Assert
