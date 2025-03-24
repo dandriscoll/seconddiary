@@ -49,7 +49,8 @@ namespace SecondDiary.API.Controllers
             var authConfig = new
             {
                 ClientId = _configuration["AzureAd:ClientId"],
-                TenantId = _configuration["AzureAd:TenantId"]
+                TenantId = _configuration["AzureAd:TenantId"],
+                Instance = _configuration["AzureAd:Instance"]
             };
 
             return Ok(authConfig);

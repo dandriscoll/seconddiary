@@ -1,6 +1,7 @@
 // TypeScript interfaces for the configurations
 interface AuthConfig {
   clientId: string;
+  instance: string;
   tenantId: string;
 }
 
@@ -33,10 +34,11 @@ export async function fetchMsalConfig(): Promise<MsalConfig> {
     }
     const config: AuthConfig = await response.json();
     
+    // Use authority from the config response
     return {
       auth: {
         clientId: config.clientId,
-        authority: `https://login.microsoftonline.com/${config.tenantId}`,
+        authority: config.instance || `https://login.microsoftonline.com/consumers/${config.tenantId}`,
         redirectUri: window.location.origin,
       },
       cache: {

@@ -4,7 +4,7 @@ import { SignInButton } from './components/SignInButton';
 import { SignOutButton } from './components/SignOutButton';
 import { ProfileContent } from './components/ProfileContent';
 
-function App() {
+const App: React.FC = () => {
   const { accounts } = useMsal();
   const isAuthenticated = accounts.length > 0;
 
@@ -35,6 +35,6 @@ function App() {
       </main>
     </div>
   );
-}
+};
 
 export default App;
