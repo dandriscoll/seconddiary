@@ -18,18 +18,6 @@
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="6.0.0" />
   </ItemGroup>
 
-  <!-- Exclude ClientApp files from build output -->
-  <ItemGroup>
-    <Content Remove="ClientApp\**" />
-    <None Include="ClientApp\**" Exclude="ClientApp\node_modules\**" />
-    <None Remove="ClientApp\node_modules\**" />
-  </ItemGroup>
-
-  <!-- Make sure wwwroot files are included properly -->
-  <ItemGroup>
-    <Content Include="wwwroot\**" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
-
   <!-- Fixed target to ensure correct working directory -->
   <Target Name="NpmBuild" BeforeTargets="Build">
     <Exec Command="npm run build" WorkingDirectory="$(MSBuildProjectDirectory)\ClientApp" />
@@ -43,6 +31,8 @@
   <!-- Optional: Skip npm build during design-time builds -->
   <PropertyGroup>
     <DisableNpmBuildDuringDesignTimeBuild>true</DisableNpmBuildDuringDesignTimeBuild>
+    <!-- Disable default content inclusion -->
+    <EnableDefaultContentItems>false</EnableDefaultContentItems>
   </PropertyGroup>
   
   <Target Name="SkipNpmBuildDuringDesignTimeBuild" BeforeTargets="NpmBuild" 
@@ -52,5 +42,27 @@
       <BuildDependsOn>$(BuildDependsOn.Replace('NpmBuild', ''))</BuildDependsOn>
     </PropertyGroup>
   </Target>
+  
+  <!-- Content management - consolidated and cleaned up -->
+  <ItemGroup>
+    <!-- Include standard wwwroot files -->
+    <Content Include="wwwroot\**" CopyToOutputDirectory="PreserveNewest" />
+    
+    <!-- Exclude ClientApp source code files from Content -->
+    <Content Remove="ClientApp\**" />
+    
+    <!-- Exclude the specific problematic assets causing duplicate conflicts -->
+    <Content Remove="wwwroot\ClientApp.*.css" />
+    <Content Remove="wwwroot\ClientApp.*.css.map" />
+    <Content Remove="wwwroot\ClientApp.*.js" />
+    <Content Remove="wwwroot\ClientApp.*.js.map" />
+    <Content Remove="wwwroot\index.html" Condition="Exists('ClientApp\dist\index.html')" />
+  </ItemGroup> 
+  
+  <!-- Include ClientApp source as None items (not published) -->
+  <ItemGroup>
+    <None Include="ClientApp\**" Exclude="ClientApp\node_modules\**" />
+    <None Remove="ClientApp\node_modules\**" />
+  </ItemGroup>
 
 </Project>
