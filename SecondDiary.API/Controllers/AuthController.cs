@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 
 namespace SecondDiary.API.Controllers
 {
@@ -8,6 +9,13 @@ namespace SecondDiary.API.Controllers
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
+        private readonly IConfiguration _configuration;
+
+        public AuthController(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
+
         [HttpGet("me")]
         [Authorize]
         public IActionResult GetCurrentUser()
@@ -33,6 +41,18 @@ namespace SecondDiary.API.Controllers
         {
             await HttpContext.SignOutAsync();
             return Ok(new { message = "Logged out successfully" });
+        }
+
+        [HttpGet("config")]
+        public IActionResult GetAuthConfig()
+        {
+            var authConfig = new
+            {
+                ClientId = _configuration["AzureAd:ClientId"],
+                TenantId = _configuration["AzureAd:TenantId"]
+            };
+
+            return Ok(authConfig);
         }
     }
 }

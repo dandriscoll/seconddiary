@@ -28,4 +28,10 @@
     <ProjectReference Include="..\SecondDiary.API\SecondDiary.API.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
