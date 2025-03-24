@@ -18,4 +18,39 @@
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="6.0.0" />
   </ItemGroup>
 
+  <!-- Exclude ClientApp files from build output -->
+  <ItemGroup>
+    <Content Remove="ClientApp\**" />
+    <None Include="ClientApp\**" Exclude="ClientApp\node_modules\**" />
+    <None Remove="ClientApp\node_modules\**" />
+  </ItemGroup>
+
+  <!-- Make sure wwwroot files are included properly -->
+  <ItemGroup>
+    <Content Include="wwwroot\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- Fixed target to ensure correct working directory -->
+  <Target Name="NpmBuild" BeforeTargets="Build">
+    <Exec Command="npm run build" WorkingDirectory="$(MSBuildProjectDirectory)\ClientApp" />
+  </Target>
+
+  <!-- Fixed fallback target to ensure correct working directory -->
+  <Target Name="NpmBuildFallback" BeforeTargets="NpmBuild" Condition="!Exists('$(MSBuildProjectDirectory)\ClientApp\node_modules')">
+    <Exec Command="npm install" WorkingDirectory="$(MSBuildProjectDirectory)\ClientApp" />
+  </Target>
+
+  <!-- Optional: Skip npm build during design-time builds -->
+  <PropertyGroup>
+    <DisableNpmBuildDuringDesignTimeBuild>true</DisableNpmBuildDuringDesignTimeBuild>
+  </PropertyGroup>
+  
+  <Target Name="SkipNpmBuildDuringDesignTimeBuild" BeforeTargets="NpmBuild" 
+          Condition="'$(DesignTimeBuild)' == 'true' AND '$(DisableNpmBuildDuringDesignTimeBuild)' == 'true'">
+    <Message Importance="high" Text="Skipping npm build during design-time build." />
+    <PropertyGroup>
+      <BuildDependsOn>$(BuildDependsOn.Replace('NpmBuild', ''))</BuildDependsOn>
+    </PropertyGroup>
+  </Target>
+
 </Project>

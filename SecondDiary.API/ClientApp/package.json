@@ -4,7 +4,7 @@
   "source": "src/index.html",
   "scripts": {
     "start": "parcel",
-    "build": "parcel build --dist-dir ../wwwroot --public-url /"
+    "build": "parcel build src/index.html --dist-dir ../wwwroot --public-url / --no-cache"
   },
   "dependencies": {
     "@azure/msal-browser": "^4.8.0",
