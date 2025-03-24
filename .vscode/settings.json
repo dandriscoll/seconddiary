@@ -1,4 +1,0 @@
-{
-    "appService.preDeployTask": "publish-release",
-    "appService.deploySubpath": "SecondDiary.API/bin/Release/net9.0/publish"
-}
