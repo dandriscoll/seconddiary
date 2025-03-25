@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Identity.Web;
+using SecondDiary.API.Services;
 
 namespace SecondDiary.API.Controllers
 {
@@ -10,10 +11,12 @@ namespace SecondDiary.API.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IConfiguration _configuration;
+        private readonly IUserContext _userContext;
 
-        public AuthController(IConfiguration configuration)
+        public AuthController(IConfiguration configuration, IUserContext userContext)
         {
             _configuration = configuration;
+            _userContext = userContext;
         }
 
         [HttpGet("me")]
@@ -25,7 +28,9 @@ namespace SecondDiary.API.Controllers
 
             return Ok(new
             {
+                UserId = _userContext.UserId,
                 Name = User.Identity.Name,
+                ObjectId = User.GetObjectId(),
                 Claims = User.Claims.Select(c => new { c.Type, c.Value })
             });
         }
@@ -37,10 +42,15 @@ namespace SecondDiary.API.Controllers
         }
 
         [HttpGet("logout")]
-        public async Task<IActionResult> Logout()
+        public IActionResult Logout()
         {
-            await HttpContext.SignOutAsync();
-            return Ok(new { message = "Logged out successfully" });
+            // JWT tokens are stateless and can't be invalidated on the server
+            // Logging out with JWTs is handled client-side by discarding the token
+            
+            return Ok(new { 
+                message = "For JWT authentication, logout should be handled by the client by discarding the token",
+                instructions = "Remove the token from your local storage or cookie"
+            });
         }
 
         [HttpGet("config")]

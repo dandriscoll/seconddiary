@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SecondDiary.API.Models;
 using SecondDiary.API.Services;
@@ -5,18 +6,22 @@ using SecondDiary.API.Services;
 namespace SecondDiary.API.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/[controller]")]
     public class DiaryController : ControllerBase
     {
         private readonly IDiaryService _diaryService;
         private readonly IWebHostEnvironment _environment;
+        private readonly IUserContext _userContext;
 
         public DiaryController(
             IDiaryService diaryService,
-            IWebHostEnvironment environment)
+            IWebHostEnvironment environment,
+            IUserContext userContext)
         {
             _diaryService = diaryService ?? throw new ArgumentNullException(nameof(diaryService));
             _environment = environment ?? throw new ArgumentNullException(nameof(environment));
+            _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext));
         }
 
         private string GetUserId()
@@ -24,10 +29,12 @@ namespace SecondDiary.API.Controllers
             if (_environment.IsDevelopment())
                 return "development-user";
 
-            string? userName = User.Identity?.Name;
-            if (string.IsNullOrEmpty(userName))
+            // Use the UserContext to get the user ID instead of extracting it manually
+            string? userId = _userContext.UserId;
+            if (string.IsNullOrEmpty(userId))
                 throw new UnauthorizedAccessException("User not authenticated");
-            return userName;
+            
+            return userId;
         }
 
         [HttpPost]

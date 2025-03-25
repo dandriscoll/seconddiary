@@ -1,68 +1,78 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SecondDiary.API.Services;
 
 namespace SecondDiary.API.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/[controller]")]
     public class SystemPromptController : ControllerBase
     {
         private readonly ISystemPromptService _systemPromptService;
         private readonly IWebHostEnvironment _environment;
         private readonly IOpenAIService _openAIService;
+        private readonly IUserContext _userContext;
 
         public SystemPromptController(
             ISystemPromptService systemPromptService,
             IWebHostEnvironment environment,
-            IOpenAIService openAIService)
+            IOpenAIService openAIService,
+            IUserContext userContext)
         {
             _systemPromptService = systemPromptService ?? throw new ArgumentNullException(nameof(systemPromptService));
             _environment = environment ?? throw new ArgumentNullException(nameof(environment));
             _openAIService = openAIService ?? throw new ArgumentNullException(nameof(openAIService));
+            _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext));
         }
 
-        [HttpGet("{userId}")]
-        public async Task<ActionResult<string>> GetSystemPrompt(string userId)
+        private string GetUserId()
         {
-            if (string.IsNullOrEmpty(userId))
-                return BadRequest("User ID cannot be empty");
+            if (_environment.IsDevelopment())
+                return "development-user";
 
+            string? userId = _userContext.UserId;
+            if (string.IsNullOrEmpty(userId))
+                throw new UnauthorizedAccessException("User not authenticated");
+            
+            return userId;
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<string>> GetSystemPrompt()
+        {
+            string userId = GetUserId();
             string prompt = await _systemPromptService.GetSystemPromptAsync(userId);
             return Ok(prompt);
         }
 
-        [HttpPost("{userId}/line")]
-        public async Task<IActionResult> AddLineToPrompt(string userId, [FromBody] string? line)
+        [HttpPost("line")]
+        public async Task<IActionResult> AddLineToPrompt([FromBody] string? line)
         {
-            if (string.IsNullOrEmpty(userId))
-                return BadRequest("User ID cannot be empty");
-
             if (string.IsNullOrEmpty(line))
                 return BadRequest("Line cannot be empty");
 
+            string userId = GetUserId();
             await _systemPromptService.AddLineToPromptAsync(userId, line);
             return Ok();
         }
 
-        [HttpDelete("{userId}/line")]
-        public async Task<IActionResult> RemoveLine(string userId, [FromBody] string? line)
+        [HttpDelete("line")]
+        public async Task<IActionResult> RemoveLine([FromBody] string? line)
         {
-            if (string.IsNullOrEmpty(userId))
-                return BadRequest("User ID cannot be empty");
-
             if (string.IsNullOrEmpty(line))
                 return BadRequest("Line text cannot be empty");
 
+            string userId = GetUserId();
             await _systemPromptService.RemoveLineAsync(userId, line);
             return Ok();
         }
 
-        [HttpGet("{userId}/recommendations")]
-        public async Task<ActionResult<string>> GetRecommendations(string userId)
+        [HttpGet("recommendations")]
+        public async Task<ActionResult<string>> GetRecommendations()
         {
-            if (string.IsNullOrEmpty(userId))
-                return BadRequest("User ID cannot be empty");
-
+            string userId = GetUserId();
+            
             try
             {
                 string recommendations = await _openAIService.GetRecommendationsAsync(userId);
