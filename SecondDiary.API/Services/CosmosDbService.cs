@@ -35,6 +35,10 @@ namespace SecondDiary.API.Services
             entry.EncryptedThought = entry.Thought != null ? _encryptionService.Encrypt(entry.Thought) : null;
             entry.Thought = null; // Clear the plain text thought
 
+            // Encrypt the context before storing (only if it's not null)
+            entry.EncryptedContext = entry.Context != null ? _encryptionService.Encrypt(entry.Context) : null;
+            entry.Context = null; // Clear the plain text context
+
             ItemResponse<DiaryEntry> response = await _container.CreateItemAsync(entry, new PartitionKey(entry.UserId));
             return response.Resource;
         }
@@ -51,6 +55,11 @@ namespace SecondDiary.API.Services
                 // Decrypt the thought before returning (only if encrypted thought exists)
                 if (entry.EncryptedThought != null)
                     entry.Thought = _encryptionService.Decrypt(entry.EncryptedThought);
+                
+                // Decrypt the context before returning (only if encrypted context exists)
+                if (entry.EncryptedContext != null)
+                    entry.Context = _encryptionService.Decrypt(entry.EncryptedContext);
+                
                 return entry;
             }
             catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
@@ -75,6 +84,11 @@ namespace SecondDiary.API.Services
                     // Decrypt the thought before returning (only if encrypted thought exists)
                     if (entry.EncryptedThought != null)
                         entry.Thought = _encryptionService.Decrypt(entry.EncryptedThought);
+                    
+                    // Decrypt the context before returning (only if encrypted context exists)
+                    if (entry.EncryptedContext != null)
+                        entry.Context = _encryptionService.Decrypt(entry.EncryptedContext);
+                    
                     entries.Add(entry);
                 }
             }
@@ -87,6 +101,10 @@ namespace SecondDiary.API.Services
             // Encrypt the thought before storing (only if it's not null)
             entry.EncryptedThought = entry.Thought != null ? _encryptionService.Encrypt(entry.Thought) : null;
             entry.Thought = null; // Clear the plain text thought
+
+            // Encrypt the context before storing (only if it's not null)
+            entry.EncryptedContext = entry.Context != null ? _encryptionService.Encrypt(entry.Context) : null;
+            entry.Context = null; // Clear the plain text context
 
             ItemResponse<DiaryEntry> response = await _container.UpsertItemAsync(entry, new PartitionKey(entry.UserId));
             return response.Resource;

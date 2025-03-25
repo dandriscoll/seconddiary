@@ -60,7 +60,7 @@ namespace SecondDiary.API.Services
 
             // Simple recommendation based on the most recent entry
             var latestEntry = entries.OrderByDescending(e => e.Date).First();
-            return $"Based on your latest entry from {latestEntry.Date:MMM dd, yyyy}, consider writing about your mood: {latestEntry.Mood ?? "not specified"}";
+            return $"Based on your latest entry from {latestEntry.Date:MMM dd, yyyy}, consider writing about your context: {latestEntry.Context ?? "not specified"}";
         }
     }
-} 
+}

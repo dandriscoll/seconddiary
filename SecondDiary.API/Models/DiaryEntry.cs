@@ -19,10 +19,13 @@ namespace SecondDiary.API.Models
         [JsonPropertyName("encryptedThought")]
         public string? EncryptedThought { get; set; }
 
-        [JsonPropertyName("mood")]
-        public string? Mood { get; set; }
+        [JsonPropertyName("context")]
+        public string? Context { get; set; }
+
+        [JsonPropertyName("encryptedContext")]
+        public string? EncryptedContext { get; set; }
 
         [JsonPropertyName("tags")]
         public List<string> Tags { get; set; } = new();
     }
-} 
+}
