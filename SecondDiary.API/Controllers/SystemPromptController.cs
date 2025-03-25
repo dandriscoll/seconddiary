@@ -18,30 +18,39 @@ namespace SecondDiary.API.Controllers
             _environment = environment ?? throw new ArgumentNullException(nameof(environment));
         }
 
-        [HttpGet]
-        public async Task<ActionResult<string>> GetSystemPrompt()
+        [HttpGet("{userId}")]
+        public async Task<ActionResult<string>> GetSystemPrompt(string userId)
         {
-            string prompt = await _systemPromptService.GetSystemPromptAsync();
+            if (string.IsNullOrEmpty(userId))
+                return BadRequest("User ID cannot be empty");
+
+            string prompt = await _systemPromptService.GetSystemPromptAsync(userId);
             return Ok(prompt);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> SetSystemPrompt([FromBody] string? newPrompt)
+        [HttpPost("{userId}/line")]
+        public async Task<IActionResult> AddLineToPrompt(string userId, [FromBody] string? line)
         {
-            if (string.IsNullOrEmpty(newPrompt))
-                return BadRequest("System prompt cannot be empty");
+            if (string.IsNullOrEmpty(userId))
+                return BadRequest("User ID cannot be empty");
 
-            await _systemPromptService.SetSystemPromptAsync(newPrompt);
+            if (string.IsNullOrEmpty(line))
+                return BadRequest("Line cannot be empty");
+
+            await _systemPromptService.AddLineToPromptAsync(userId, line);
             return Ok();
         }
 
-        [HttpPost("append")]
-        public async Task<IActionResult> AppendToSystemPrompt([FromBody] string? additionalPrompt)
+        [HttpDelete("{userId}/line")]
+        public async Task<IActionResult> RemoveLine(string userId, [FromBody] string? line)
         {
-            if (string.IsNullOrEmpty(additionalPrompt))
-                return BadRequest("Additional prompt cannot be empty");
+            if (string.IsNullOrEmpty(userId))
+                return BadRequest("User ID cannot be empty");
 
-            await _systemPromptService.AppendToSystemPromptAsync(additionalPrompt);
+            if (string.IsNullOrEmpty(line))
+                return BadRequest("Line text cannot be empty");
+
+            await _systemPromptService.RemoveLineAsync(userId, line);
             return Ok();
         }
     }

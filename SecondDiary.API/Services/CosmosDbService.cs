@@ -1,6 +1,7 @@
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Options;
 using SecondDiary.API.Models;
+using System.Reflection;
 
 namespace SecondDiary.API.Services
 {
@@ -11,6 +12,11 @@ namespace SecondDiary.API.Services
         Task<IEnumerable<DiaryEntry>> GetEntriesAsync(string userId);
         Task<DiaryEntry> UpdateEntryAsync(DiaryEntry entry);
         Task DeleteEntryAsync(string id, string userId);
+
+        // Generic methods for any type including SystemPrompt
+        Task<T?> GetItemAsync<T>(string id, string userId) where T : class;
+        Task<T> CreateItemAsync<T>(T item) where T : class;
+        Task<T> UpdateItemAsync<T>(T item) where T : class;
     }
 
     public class CosmosDbService : ICosmosDbService
@@ -115,6 +121,51 @@ namespace SecondDiary.API.Services
             await _container.DeleteItemAsync<DiaryEntry>(
                 id,
                 new PartitionKey(userId));
+        }
+
+        // Generic methods implementation
+        public async Task<T?> GetItemAsync<T>(string id, string userId) where T : class
+        {
+            try
+            {
+                ItemResponse<T> response = await _container.ReadItemAsync<T>(
+                    id,
+                    new PartitionKey(userId));
+                
+                return response.Resource;
+            }
+            catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return null;
+            }
+        }
+
+        public async Task<T> CreateItemAsync<T>(T item) where T : class
+        {
+            string userId = GetUserIdFromItem(item);
+            ItemResponse<T> response = await _container.CreateItemAsync(item, new PartitionKey(userId));
+            return response.Resource;
+        }
+
+        public async Task<T> UpdateItemAsync<T>(T item) where T : class
+        {
+            string userId = GetUserIdFromItem(item);
+            ItemResponse<T> response = await _container.UpsertItemAsync(item, new PartitionKey(userId));
+            return response.Resource;
+        }
+
+        // Helper method to extract UserId from any item type
+        private string GetUserIdFromItem<T>(T item) where T : class
+        {
+            PropertyInfo? userIdProperty = typeof(T).GetProperty("UserId");
+            if (userIdProperty == null)
+                throw new InvalidOperationException($"Type {typeof(T).Name} does not have a UserId property");
+            
+            string? userId = userIdProperty.GetValue(item)?.ToString();
+            if (userId == null)
+                throw new InvalidOperationException("UserId property cannot be null");
+            
+            return userId;
         }
     }
 }
