@@ -48,6 +48,10 @@ namespace SecondDiary.API
             services.Configure<CosmosDbSettings>(Configuration.GetSection("CosmosDb"));
             services.AddSingleton<ICosmosDbService, CosmosDbService>();
 
+            // Configure Azure OpenAI
+            services.Configure<OpenAISettings>(Configuration.GetSection("AzureOpenAI"));
+            services.AddSingleton<IOpenAIService, OpenAIService>();
+
             // Configure Encryption Service
             services.AddSingleton<IEncryptionService, EncryptionService>();
 

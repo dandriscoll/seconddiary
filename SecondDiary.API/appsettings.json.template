@@ -20,5 +20,10 @@
   },
   "Encryption": {
     "Key": "your-32-byte-encryption-key-here"
+  },
+  "AzureOpenAI": {
+    "Endpoint": "https://your-resource-name.openai.azure.com/",
+    "ApiKey": "your-api-key",
+    "DeploymentName": "your-deployment-name"
   }
-} 
+}

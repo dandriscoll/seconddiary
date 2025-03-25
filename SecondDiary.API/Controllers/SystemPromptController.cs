@@ -9,13 +9,16 @@ namespace SecondDiary.API.Controllers
     {
         private readonly ISystemPromptService _systemPromptService;
         private readonly IWebHostEnvironment _environment;
+        private readonly IOpenAIService _openAIService;
 
         public SystemPromptController(
             ISystemPromptService systemPromptService,
-            IWebHostEnvironment environment)
+            IWebHostEnvironment environment,
+            IOpenAIService openAIService)
         {
             _systemPromptService = systemPromptService ?? throw new ArgumentNullException(nameof(systemPromptService));
             _environment = environment ?? throw new ArgumentNullException(nameof(environment));
+            _openAIService = openAIService ?? throw new ArgumentNullException(nameof(openAIService));
         }
 
         [HttpGet("{userId}")]
@@ -52,6 +55,23 @@ namespace SecondDiary.API.Controllers
 
             await _systemPromptService.RemoveLineAsync(userId, line);
             return Ok();
+        }
+
+        [HttpGet("{userId}/recommendations")]
+        public async Task<ActionResult<string>> GetRecommendations(string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+                return BadRequest("User ID cannot be empty");
+
+            try
+            {
+                string recommendations = await _openAIService.GetRecommendationsAsync(userId);
+                return Ok(recommendations);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error generating recommendations: {ex.Message}");
+            }
         }
     }
 }

@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Azure.AI.OpenAI" Version="2.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="9.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="9.0.3" />
@@ -35,8 +36,7 @@
     <EnableDefaultContentItems>false</EnableDefaultContentItems>
   </PropertyGroup>
   
-  <Target Name="SkipNpmBuildDuringDesignTimeBuild" BeforeTargets="NpmBuild" 
-          Condition="'$(DesignTimeBuild)' == 'true' AND '$(DisableNpmBuildDuringDesignTimeBuild)' == 'true'">
+  <Target Name="SkipNpmBuildDuringDesignTimeBuild" BeforeTargets="NpmBuild" Condition="'$(DesignTimeBuild)' == 'true' AND '$(DisableNpmBuildDuringDesignTimeBuild)' == 'true'">
     <Message Importance="high" Text="Skipping npm build during design-time build." />
     <PropertyGroup>
       <BuildDependsOn>$(BuildDependsOn.Replace('NpmBuild', ''))</BuildDependsOn>

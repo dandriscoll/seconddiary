@@ -1,6 +1,12 @@
 # Second Diary
 
-A secure personal diary application built with ASP.NET Core and React, with Microsoft identity integration.
+A secure diary application with AI-powered recommendations.
+
+## Features
+
+- Encrypted diary entries
+- User authentication with Azure AD
+- AI-powered recommendations based on diary entries
 
 ## Overview
 
@@ -64,6 +70,11 @@ Second Diary is a modern web application that allows users to:
          "ClientId": "your-microsoft-client-id",
          "ClientSecret": "your-microsoft-client-secret"
        }
+     },
+     "AzureOpenAI": {
+       "Endpoint": "https://your-resource-name.openai.azure.com/",
+       "ApiKey": "your-api-key",
+       "DeploymentName": "your-deployment-name"
      }
    }
    ```
@@ -102,6 +113,40 @@ Second Diary is a modern web application that allows users to:
    - Add a description and select an expiration period
    - Copy the secret value immediately (you won't be able to see it again)
    - Add this value to your `appsettings.Development.json` file in the Authentication:Microsoft:ClientSecret section
+
+### Azure OpenAI Setup
+
+The application uses Azure OpenAI to provide personalized recommendations based on diary entries. To set up:
+
+1. Create an Azure OpenAI resource in the Azure portal:
+   - Navigate to the Azure portal and search for "Azure OpenAI"
+   - Click "Create" and complete the required fields
+   - Select appropriate region, pricing tier, and other settings
+   - Click "Review + create" and then "Create"
+
+2. Create a model deployment in Azure AI Studio:
+   - Navigate to Azure AI Studio (https://oai.azure.com/)
+   - Select your OpenAI resource
+   - Go to "Deployments" in the left navigation
+   - Click "Create new deployment"
+   - Choose a model (e.g., GPT-4, GPT-3.5-Turbo)
+   - Give your deployment a name (e.g., "diary-recommendations")
+   - Configure your model version and other parameters
+   - Click "Create"
+
+3. Get your configuration details:
+   - For the Endpoint: Go to your Azure OpenAI resource in the Azure portal, navigate to "Keys and Endpoint", and copy the Endpoint
+   - For the API Key: Copy either Key1 or Key2 from the same page
+   - For the Deployment Name: Use the name you gave your deployment in step 2
+
+4. Update the `appsettings.json` with your configuration in the AzureOpenAI section:
+   ```json
+   "AzureOpenAI": {
+     "Endpoint": "https://your-resource-name.openai.azure.com/",
+     "ApiKey": "your-api-key",
+     "DeploymentName": "your-deployment-name"
+   }
+   ```
 
 ### Running the Application
 
@@ -181,6 +226,23 @@ Second Diary is a modern web application that allows users to:
 5. **Verify Deployment**:
    - Navigate to `https://seconddiary.azurewebsites.net` (replace with your actual app name)
    - Ensure you can log in and use the application
+
+## API Endpoints
+
+### Diary Entries
+
+- `GET /api/Diary/{userId}` - Get all diary entries for a user
+- `GET /api/Diary/{userId}/{id}` - Get a specific diary entry
+- `POST /api/Diary` - Create a new diary entry
+- `PUT /api/Diary/{id}` - Update an existing diary entry
+- `DELETE /api/Diary/{userId}/{id}` - Delete a diary entry
+
+### System Prompt
+
+- `GET /api/SystemPrompt/{userId}` - Get the system prompt
+- `POST /api/SystemPrompt/{userId}/line` - Add a line to the system prompt
+- `DELETE /api/SystemPrompt/{userId}/line` - Remove a line from the system prompt
+- `GET /api/SystemPrompt/{userId}/recommendations` - Get AI-generated recommendations based on diary entries
 
 ## Troubleshooting
 
