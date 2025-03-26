@@ -1,9 +1,9 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authentication.MicrosoftAccount;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.FileProviders;
 using Newtonsoft.Json;
 using SecondDiary.API.Models;
 using SecondDiary.API.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 namespace SecondDiary.API
 {
@@ -18,23 +18,6 @@ namespace SecondDiary.API
 
         public void ConfigureServices(IServiceCollection services)
         {
-            // Configure JWT authentication
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>
-                {
-                    options.Authority = $"https://login.microsoftonline.com/{Configuration["AzureAd:TenantId"]}/v2.0";
-                    options.Audience = Configuration["AzureAd:ClientId"];
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateLifetime = true,
-                        ValidateIssuerSigningKey = true,
-                        ValidIssuer = $"https://login.microsoftonline.com/{Configuration["AzureAd:TenantId"]}/v2.0",
-                        ValidAudience = Configuration["AzureAd:ClientId"]
-                    };
-                });
-
             services.AddControllers()
                 .AddNewtonsoftJson(options =>
                 {
@@ -43,6 +26,9 @@ namespace SecondDiary.API
                 });
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
+
+            // Register HttpContextAccessor
+            services.AddHttpContextAccessor();
 
             // Configure Cosmos DB
             services.Configure<CosmosDbSettings>(Configuration.GetSection("CosmosDb"));
@@ -55,39 +41,33 @@ namespace SecondDiary.API
             // Configure Encryption Service
             services.AddSingleton<IEncryptionService, EncryptionService>();
 
-            // Configure Microsoft Account Authentication
-            string? clientId = Configuration["Authentication:Microsoft:ClientId"];
-            string? clientSecret = Configuration["Authentication:Microsoft:ClientSecret"];
-
-            if (!string.IsNullOrEmpty(clientId) && !string.IsNullOrEmpty(clientSecret))
-            {
-                services.AddAuthentication(options =>
-                {
-                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                    options.DefaultChallengeScheme = MicrosoftAccountDefaults.AuthenticationScheme;
-                })
-                .AddMicrosoftAccount(options =>
-                {
-                    options.ClientId = clientId;
-                    options.ClientSecret = clientSecret;
-                })
-                .AddJwtBearer(options =>
-                {
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateLifetime = true,
-                        ValidateIssuerSigningKey = true,
-                        ValidIssuer = "https://login.microsoftonline.com/common/v2.0",
-                        ValidAudience = clientId
-                    };
-                });
-            }
-
             // Register services with their interfaces
             services.AddSingleton<IDiaryService, DiaryService>();
             services.AddSingleton<ISystemPromptService, SystemPromptService>();
+            services.AddSingleton<IUserContext, UserContext>();
+
+            // Configure JWT Bearer Authentication with AAD validation
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.Authority = $"https://login.microsoftonline.com/{Configuration["Authentication:Microsoft:TenantId"]}/v2.0";
+                options.Audience = Configuration["Authentication:Microsoft:ClientId"];
+                
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = $"https://login.microsoftonline.com/{Configuration["Authentication:Microsoft:TenantId"]}/v2.0",
+                    ValidAudience = Configuration["Authentication:Microsoft:ClientId"],
+                    NameClaimType = "name",
+                };
+            });
 
             // Add authorization policies if needed
             services.AddAuthorization();
@@ -101,32 +81,49 @@ namespace SecondDiary.API
                 app.UseSwaggerUI();
                 app.UseDeveloperExceptionPage();
             }
+            
+            // Log all requests and responses
+            app.Use(async (context, next) =>
+            {
+                logger.LogInformation($"Handling request: {context.Request.Method} {context.Request.Path}");
+                await next();
+                logger.LogInformation($"Response status code: {context.Response.StatusCode}");
+            });
+
+            // IMPORTANT: Static files middleware must be before routing to properly handle static content
+            // Use more explicit static files configuration
+            string wwwrootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+            logger.LogInformation($"Static files root directory: {wwwrootPath}");
+            
+            if (Directory.Exists(wwwrootPath))
+            {
+                string[] files = Directory.GetFiles(wwwrootPath, "*", SearchOption.AllDirectories);
+                foreach (string file in files)
+                    logger.LogInformation($"Found static file: {Path.GetRelativePath(wwwrootPath, file)}");
+            }
+            else
+            {
+                logger.LogWarning("wwwroot directory not found at: " + wwwrootPath);
+            }
+
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot")),
+                OnPrepareResponse = ctx => logger.LogInformation($"Serving static file: {ctx.File.PhysicalPath}")
+            });
 
             app.UseHttpsRedirection();
-            
-            // Default static files middleware
-            app.UseStaticFiles();
-            
-            // Add ClientApp static files with correct path mapping
-            string clientAppPath = Path.Combine(Directory.GetCurrentDirectory(), "ClientApp/dist");
-            if (Directory.Exists(clientAppPath))
-            {
-                app.UseStaticFiles(new StaticFileOptions
-                {
-                    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(clientAppPath),
-                    RequestPath = "/ClientApp/dist"
-                });
-            }
-            
             app.UseRouting();
 
-            // Add authentication middleware
             app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                
+                // Add this only if you're building a SPA
+                endpoints.MapFallbackToFile("index.html");
             });
         }
     }
