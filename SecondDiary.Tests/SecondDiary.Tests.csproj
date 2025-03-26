@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SecondDiary.API\SecondDiary.API.csproj" />
+    <ProjectReference Include="..\SecondDiary.Service\SecondDiary.Service.csproj" />
   </ItemGroup>
 
   <ItemGroup>
