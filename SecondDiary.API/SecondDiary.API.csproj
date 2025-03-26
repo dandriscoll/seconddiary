@@ -4,6 +4,8 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <DisableNpmBuildDuringDesignTimeBuild>true</DisableNpmBuildDuringDesignTimeBuild>
+    <EnableDefaultContentItems>false</EnableDefaultContentItems>
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,12 +31,11 @@
     <Exec Command="npm install" WorkingDirectory="$(MSBuildProjectDirectory)\ClientApp" />
   </Target>
 
-  <!-- Optional: Skip npm build during design-time builds -->
-  <PropertyGroup>
-    <DisableNpmBuildDuringDesignTimeBuild>true</DisableNpmBuildDuringDesignTimeBuild>
-    <!-- Disable default content inclusion -->
-    <EnableDefaultContentItems>false</EnableDefaultContentItems>
-  </PropertyGroup>
+  <Target Name="CleanWwwroot" AfterTargets="Clean">
+    <RemoveDir Directories="$(MSBuildProjectDirectory)\wwwroot" />
+    <RemoveDir Directories="$(OutputPath)wwwroot" />
+    <MakeDir Directories="$(MSBuildProjectDirectory)\wwwroot" />
+  </Target>
   
   <Target Name="SkipNpmBuildDuringDesignTimeBuild" BeforeTargets="NpmBuild" Condition="'$(DesignTimeBuild)' == 'true' AND '$(DisableNpmBuildDuringDesignTimeBuild)' == 'true'">
     <Message Importance="high" Text="Skipping npm build during design-time build." />
@@ -42,27 +43,12 @@
       <BuildDependsOn>$(BuildDependsOn.Replace('NpmBuild', ''))</BuildDependsOn>
     </PropertyGroup>
   </Target>
-  
-  <!-- Content management - consolidated and cleaned up -->
-  <ItemGroup>
-    <!-- Include standard wwwroot files -->
-    <Content Include="wwwroot\**" CopyToOutputDirectory="PreserveNewest" />
-    
-    <!-- Exclude ClientApp source code files from Content -->
-    <Content Remove="ClientApp\**" />
-    
-    <!-- Exclude the specific problematic assets causing duplicate conflicts -->
-    <Content Remove="wwwroot\ClientApp.*.css" />
-    <Content Remove="wwwroot\ClientApp.*.css.map" />
-    <Content Remove="wwwroot\ClientApp.*.js" />
-    <Content Remove="wwwroot\ClientApp.*.js.map" />
-    <Content Remove="wwwroot\index.html" Condition="Exists('ClientApp\dist\index.html')" />
-  </ItemGroup> 
-  
-  <!-- Include ClientApp source as None items (not published) -->
-  <ItemGroup>
-    <None Include="ClientApp\**" Exclude="ClientApp\node_modules\**" />
-    <None Remove="ClientApp\node_modules\**" />
-  </ItemGroup>
+
+  <Target Name="CopyWwwrootToOutput" AfterTargets="NpmBuild">
+    <ItemGroup>
+      <WwwrootFiles Include="$(MSBuildProjectDirectory)\wwwroot\**\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(WwwrootFiles)" DestinationFolder="$(OutputPath)wwwroot\%(RecursiveDir)" />
+  </Target>
 
 </Project>
