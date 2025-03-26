@@ -2,11 +2,19 @@ import React from 'react';
 import { useMsal } from '@azure/msal-react';
 import { loginRequest } from '../authConfig';
 
-export const SignInButton = () => {
+interface SignInButtonProps {
+  onTokenAcquired: (token: string) => void;
+}
+
+export const SignInButton: React.FC<SignInButtonProps> = ({ onTokenAcquired }) => {
   const { instance } = useMsal();
 
-  const handleLogin = () => {
+  const handleLogin = (): void => {
     instance.loginPopup(loginRequest)
+      .then(response => {
+        const token: string = response.accessToken;
+        onTokenAcquired(token);
+      })
       .catch(error => console.log(error));
   };
 

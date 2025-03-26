@@ -3,35 +3,37 @@ import { AuthenticatedTemplate, UnauthenticatedTemplate, useMsal } from '@azure/
 import { SignInButton } from './components/SignInButton';
 import { SignOutButton } from './components/SignOutButton';
 import { ProfileContent } from './components/ProfileContent';
+import { SystemPromptEditor } from './components/SystemPromptEditor';
 import './index.less'; // Updated to use the master stylesheet
 
 const App: React.FC = () => {
   const { accounts } = useMsal();
   const isAuthenticated = accounts.length > 0;
-  const [thought, setThought] = useState('');
-  const [context, setContext] = useState('');
-  const [isPosting, setIsPosting] = useState(false);
+  const [thought, setThought] = useState<string>('');
+  const [context, setContext] = useState<string>('');
+  const [isPosting, setIsPosting] = useState<boolean>(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [token, setToken] = useState<string | null>(null);
+
+  const handleTokenAcquired = (newToken: string): void => {
+    setToken(newToken);
+  };
 
   // Detect system theme preference
   useEffect(() => {
     // Check for system dark mode preference
-    const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeMediaQuery: MediaQueryList = window.matchMedia('(prefers-color-scheme: dark)');
     
     // Set initial theme based on system preference
     setTheme(darkModeMediaQuery.matches ? 'dark' : 'light');
     
     // Listen for changes in the system theme
-    const handleThemeChange = (e: MediaQueryListEvent) => {
-      setTheme(e.matches ? 'dark' : 'light');
-    };
+    const handleThemeChange = (e: MediaQueryListEvent): void => setTheme(e.matches ? 'dark' : 'light');
     
     darkModeMediaQuery.addEventListener('change', handleThemeChange);
     
     // Clean up event listener
-    return () => {
-      darkModeMediaQuery.removeEventListener('change', handleThemeChange);
-    };
+    return () => darkModeMediaQuery.removeEventListener('change', handleThemeChange);
   }, []);
 
   // Apply theme class to body
@@ -40,7 +42,7 @@ const App: React.FC = () => {
     document.body.classList.add(`${theme}-theme`);
   }, [theme]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     
     if (!thought.trim()) return;
@@ -49,7 +51,7 @@ const App: React.FC = () => {
     
     try {
       // Replace with your actual API endpoint
-      const response = await fetch('/api/diary', {
+      const response: Response = await fetch('/api/diary', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -61,9 +63,7 @@ const App: React.FC = () => {
         // Clear form on successful submission
         setThought('');
         setContext('');
-      } else {
-        console.error('Failed to post entry');
-      }
+      } else console.error('Failed to post entry');
     } catch (error) {
       console.error('Error posting entry:', error);
     } finally {
@@ -79,9 +79,7 @@ const App: React.FC = () => {
           <div className="authenticated-container">
             <SignOutButton />
           </div>
-        ) : (
-          <SignInButton />
-        )}
+        ) : <SignInButton onTokenAcquired={handleTokenAcquired} />}
       </header>
 
       <main className="App-main">
@@ -94,7 +92,7 @@ const App: React.FC = () => {
             <ProfileContent />
             <p>You're now signed in and can access your diary.</p>
           </div>
-          
+          <SystemPromptEditor token={token} />
           <div className="diary-entry-form">
             <h2>Create New Entry</h2>
             <form onSubmit={handleSubmit} className="responsive-form">
@@ -111,7 +109,6 @@ const App: React.FC = () => {
                   className="full-width-input"
                 />
               </div>
-              
               <div className="form-group">
                 <label htmlFor="context">Context (Optional)</label>
                 <textarea
@@ -124,7 +121,6 @@ const App: React.FC = () => {
                   className="full-width-input"
                 />
               </div>
-              
               <button 
                 type="submit" 
                 disabled={isPosting || !thought.trim()}
