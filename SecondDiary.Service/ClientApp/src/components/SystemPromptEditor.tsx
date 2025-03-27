@@ -16,6 +16,10 @@ const SystemPromptEditor: React.FC<SystemPromptEditorProps> = ({ token }) => {
     fetchPrompt();
   }, [token]);
 
+  useEffect(() => {
+    fetchPrompt();
+  }, []);
+
   const fetchPrompt = async (): Promise<void> => {
     if (!token) return;
     try {

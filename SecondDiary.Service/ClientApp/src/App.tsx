@@ -1,22 +1,96 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { AuthenticatedTemplate, UnauthenticatedTemplate, useMsal } from '@azure/msal-react';
-import { SignInButton } from './components/SignInButton';
-import { SignOutButton } from './components/SignOutButton';
+import { AccountInfo, InteractionRequiredAuthError } from '@azure/msal-browser';
 import { ProfileContent } from './components/ProfileContent';
 import { SystemPromptEditor } from './components/SystemPromptEditor';
-import './index.less'; // Updated to use the master stylesheet
+import { loginRequest } from './authConfig';
+import './index.less';
 
 const App: React.FC = () => {
-  const { accounts } = useMsal();
-  const isAuthenticated = accounts.length > 0;
+  const { instance, accounts } = useMsal();
+  const isAuthenticated: boolean = accounts.length > 0;
   const [thought, setThought] = useState<string>('');
   const [context, setContext] = useState<string>('');
   const [isPosting, setIsPosting] = useState<boolean>(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [token, setToken] = useState<string | null>(null);
+  const [tokenLoading, setTokenLoading] = useState<boolean>(false);
 
-  const handleTokenAcquired = (newToken: string): void => {
-    setToken(newToken);
+  // Get active account
+  const activeAccount: AccountInfo | null = accounts.length > 0 ? accounts[0] : null;
+
+  // Function to acquire token silently
+  const acquireToken = useCallback(async (): Promise<string | null> => {
+    if (!activeAccount) return null;
+    
+    setTokenLoading(true);
+    
+    try {
+      const response = await instance.acquireTokenSilent({
+        ...loginRequest,
+        account: activeAccount
+      })
+      
+      setTokenLoading(false);
+      return response.accessToken;
+    } catch (error) {
+      // If silent acquisition fails due to interaction required
+      if (error instanceof InteractionRequiredAuthError) {
+        try {
+          // Fallback to popup
+          const response = await instance.acquireTokenPopup(loginRequest);
+          setTokenLoading(false);
+          return response.accessToken;
+        } catch (popupError) {
+          console.error('Error during popup token acquisition:', popupError);
+          setTokenLoading(false);
+          return null;
+        }
+      }
+      console.error('Error acquiring token silently:', error);
+      setTokenLoading(false);
+      return null;
+    }
+  }, [instance, activeAccount]);
+
+  // Get token for SystemPromptEditor when authenticated state changes
+  useEffect(() => {
+    const getTokenForPromptEditor = async (): Promise<void> => {
+      if (isAuthenticated) {
+        const token: string | null = await acquireToken();
+        setToken(token);
+      } else {
+        setToken(null);
+      }
+    };
+    
+    getTokenForPromptEditor();
+  }, [isAuthenticated, acquireToken]);
+
+  // SignInButton functionality
+  const handleLogin = (): void => {
+    instance.loginPopup(loginRequest)
+      .catch(error => console.error('Login failed:', error));
+  };
+
+  // SignOutButton functionality - clears token from MSAL cache without logging out of AAD
+  const handleSignOut = (): void => {
+    setToken(null);
+    
+    // Clear token from MSAL cache for current account only
+    if (activeAccount) {
+      const logoutRequest = {
+        account: activeAccount,
+        postLogoutRedirectUri: window.location.origin,
+        onRedirectNavigate: () => false // prevents redirect
+      };
+      
+      // This clears the token cache for the current account without navigating to AAD logout
+      instance.logoutRedirect(logoutRequest)
+        .catch((error: Error) => {
+          console.error('Error clearing token cache:', error);
+        });
+    }
   };
 
   // Detect system theme preference
@@ -50,11 +124,16 @@ const App: React.FC = () => {
     setIsPosting(true);
     
     try {
+      // Get a fresh token before making the API request
+      const currentToken: string | null = await acquireToken();
+      if (!currentToken) throw new Error('Failed to acquire token');
+      
       // Replace with your actual API endpoint
       const response: Response = await fetch('/api/diary', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${currentToken}`
         },
         body: JSON.stringify({ thought, context }),
       });
@@ -77,22 +156,33 @@ const App: React.FC = () => {
         <h1>Second Diary</h1>
         {isAuthenticated ? (
           <div className="authenticated-container">
-            <SignOutButton />
+            <button className="btn btn-secondary" onClick={handleSignOut}>
+              Sign Out
+            </button>
           </div>
-        ) : <SignInButton onTokenAcquired={handleTokenAcquired} />}
+        ) : (
+          <button className="btn btn-primary" onClick={handleLogin}>
+            Sign In
+          </button>
+        )}
       </header>
 
       <main className="App-main">
         <UnauthenticatedTemplate>
-          <p>Welcome to your diary application! Please sign in to continue.</p>
+          <p>Welcome to your thought diary! Please sign in to continue.</p>
         </UnauthenticatedTemplate>
 
         <AuthenticatedTemplate>
           <div className="profile-container">
             <ProfileContent />
-            <p>You're now signed in and can access your diary.</p>
           </div>
-          <SystemPromptEditor token={token} />
+          {tokenLoading ? (
+            <p>Loading authentication token...</p>
+          ) : token ? (
+            <SystemPromptEditor token={token} />
+          ) : (
+            <p>Token is missing. Please try signing in again.</p>
+          )}
           <div className="diary-entry-form">
             <h2>Create New Entry</h2>
             <form onSubmit={handleSubmit} className="responsive-form">

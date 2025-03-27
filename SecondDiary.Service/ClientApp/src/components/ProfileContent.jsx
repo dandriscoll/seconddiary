@@ -38,11 +38,6 @@ export const ProfileContent = () => {
   return (
     <div>
       <h5 className="card-title">Welcome {name}</h5>
-      {graphData && 
-        <div>
-          <p>Email: {graphData.mail || graphData.userPrincipalName}</p>
-        </div>
-      }
     </div>
   );
 };
