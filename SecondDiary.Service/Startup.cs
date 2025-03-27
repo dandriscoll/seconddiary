@@ -91,26 +91,9 @@ namespace SecondDiary.API
             });
 
             // IMPORTANT: Static files middleware must be before routing to properly handle static content
-            // Use more explicit static files configuration
             string wwwrootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
-            logger.LogInformation($"Static files root directory: {wwwrootPath}");
             
-            if (Directory.Exists(wwwrootPath))
-            {
-                string[] files = Directory.GetFiles(wwwrootPath, "*", SearchOption.AllDirectories);
-                foreach (string file in files)
-                    logger.LogInformation($"Found static file: {Path.GetRelativePath(wwwrootPath, file)}");
-            }
-            else
-            {
-                logger.LogWarning("wwwroot directory not found at: " + wwwrootPath);
-            }
-
-            app.UseStaticFiles(new StaticFileOptions
-            {
-                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot")),
-                OnPrepareResponse = ctx => logger.LogInformation($"Serving static file: {ctx.File.PhysicalPath}")
-            });
+            app.UseStaticFiles();
 
             app.UseHttpsRedirection();
             app.UseRouting();
