@@ -240,8 +240,8 @@ yarn-error.log
 dist/
 
 # Client app build output
-SecondDiary.API/wwwroot/dist/
-SecondDiary.API/wwwroot/*.js
-SecondDiary.API/wwwroot/*.css
-SecondDiary.API/wwwroot/*.html
-SecondDiary.API/wwwroot/*.map
+SecondDiary.Service/wwwroot/dist/
+SecondDiary.Service/wwwroot/*.js
+SecondDiary.Service/wwwroot/*.css
+SecondDiary.Service/wwwroot/*.html
+SecondDiary.Service/wwwroot/*.map
