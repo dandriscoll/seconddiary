@@ -26,20 +26,42 @@ const App: React.FC = () => {
     setTokenLoading(true);
     
     try {
-      const response = await instance.acquireTokenSilent({
+      // Explicitly request ID token in addition to access token
+      const tokenRequest = {
         ...loginRequest,
-        account: activeAccount
-      })
+        account: activeAccount,
+        scopes: ['user.read', 'openid', 'profile'],
+        forceRefresh: true
+      };
       
+      const response = await instance.acquireTokenSilent(tokenRequest);
       setTokenLoading(false);
+          
+      // Try to use ID token if available
+      if (response.idToken && response.idToken.includes('.')) {
+        console.log('Using ID token from popup instead of access token');
+        return response.idToken;
+      }
+      
       return response.accessToken;
     } catch (error) {
       // If silent acquisition fails due to interaction required
       if (error instanceof InteractionRequiredAuthError) {
         try {
-          // Fallback to popup
-          const response = await instance.acquireTokenPopup(loginRequest);
+          // Fallback to popup with explicit request for id_token
+          const tokenRequest = {
+            ...loginRequest,
+            scopes: ['user.read', 'openid', 'profile']
+          };
+          const response = await instance.acquireTokenPopup(tokenRequest);
           setTokenLoading(false);
+          
+          // Try to use ID token if available
+          if (response.idToken && response.idToken.includes('.')) {
+            console.log('Using ID token from popup instead of access token');
+            return response.idToken;
+          }
+          
           return response.accessToken;
         } catch (popupError) {
           console.error('Error during popup token acquisition:', popupError);
@@ -124,25 +146,48 @@ const App: React.FC = () => {
     setIsPosting(true);
     
     try {
-      // Get a fresh token before making the API request
+      // Get a fresh JWT token before making the API request
       const currentToken: string | null = await acquireToken();
       if (!currentToken) throw new Error('Failed to acquire token');
+      
+      // Debug: Check token format
+      if (!currentToken.includes('.')) {
+        console.error('Token is not in JWT format (missing dots):', currentToken.substring(0, 15) + '...');
+        throw new Error('Cannot proceed with non-JWT token format');
+      } else {
+        console.log('Token appears to be in correct JWT format with dots');
+        // Log the parts of the token (don't log in production!)
+        const [header, payload, signature] = currentToken.split('.');
+        console.log('Token parts:', { 
+          headerLength: header?.length || 0, 
+          payloadLength: payload?.length || 0, 
+          signatureLength: signature?.length || 0 
+        });
+      }
+      
+      // Ensure proper token transmission with correct Bearer format
+      const authHeader: string = `Bearer ${currentToken.trim()}`;
+      console.log('Using Authorization header:', authHeader.substring(0, 20) + '...');
       
       // Replace with your actual API endpoint
       const response: Response = await fetch('/api/diary', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${currentToken}`
+          'Authorization': authHeader
         },
         body: JSON.stringify({ thought, context }),
       });
       
-      if (response.ok) {
-        // Clear form on successful submission
-        setThought('');
-        setContext('');
-      } else console.error('Failed to post entry');
+      if (!response.ok) {
+        const errorData = await response.text();
+        console.error('API error response:', errorData);
+        throw new Error(`API error: ${response.status} ${response.statusText}`);
+      }
+      
+      // Clear form on successful submission
+      setThought('');
+      setContext('');
     } catch (error) {
       console.error('Error posting entry:', error);
     } finally {

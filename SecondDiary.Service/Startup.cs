@@ -54,8 +54,9 @@ namespace SecondDiary.API
             })
             .AddJwtBearer(options =>
             {
-                options.Authority = $"https://login.microsoftonline.com/{Configuration["Authentication:Microsoft:TenantId"]}/v2.0";
-                options.Audience = Configuration["Authentication:Microsoft:ClientId"];
+                // Using Microsoft Account consumer token Authority instead of AAD
+                options.Authority = "https://login.microsoftonline.com/consumers/v2.0";
+                options.Audience = Configuration["AzureAd:ClientId"];
                 
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
@@ -63,10 +64,50 @@ namespace SecondDiary.API
                     ValidateAudience = true,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    ValidIssuer = $"https://login.microsoftonline.com/{Configuration["Authentication:Microsoft:TenantId"]}/v2.0",
-                    ValidAudience = Configuration["Authentication:Microsoft:ClientId"],
+                    // Using Microsoft Account consumer token Issuer
+                    ValidIssuer = "https://login.microsoftonline.com/consumers/v2.0",
+                    ValidAudience = Configuration["AzureAd:ClientId"],
                     NameClaimType = "name",
                 };
+                
+#if false
+                // For debugging: add error tracing for JWT token validation failures
+                options.Events = new JwtBearerEvents
+                {
+                    OnAuthenticationFailed = context =>
+                    {
+                        ILogger<Startup> logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Startup>>();
+                        logger.LogError($"Authentication failed: {context.Exception.Message}");
+                        
+                        if (context.Exception is SecurityTokenExpiredException)
+                            logger.LogWarning("Token expired");
+                        else if (context.Exception is SecurityTokenInvalidAudienceException)
+                            logger.LogWarning("Invalid audience: {Audience}", ((SecurityTokenInvalidAudienceException)context.Exception).InvalidAudience);
+                        else if (context.Exception is SecurityTokenInvalidIssuerException)
+                            logger.LogWarning("Invalid issuer: {Issuer}", ((SecurityTokenInvalidIssuerException)context.Exception).InvalidIssuer);
+                        else
+                            logger.LogError(context.Exception, "Other token validation error");
+                        
+                        return Task.CompletedTask;
+                    },
+                    OnChallenge = context =>
+                    {
+                        ILogger<Startup> logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Startup>>();
+                        
+                        if (!context.Handled)
+                            logger.LogInformation("Authentication challenge issued. Error: {Error}, ErrorDescription: {Description}", 
+                                context.Error, context.ErrorDescription);
+                            
+                        return Task.CompletedTask;
+                    },
+                    OnTokenValidated = context =>
+                    {
+                        ILogger<Startup> logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Startup>>();
+                        logger.LogInformation("Token validated successfully for user: {Name}", context.Principal.Identity.Name);
+                        return Task.CompletedTask;
+                    }
+                };
+#endif
             });
 
             // Add authorization policies if needed
