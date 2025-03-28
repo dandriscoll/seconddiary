@@ -124,25 +124,22 @@ namespace SecondDiary.Tests.Services
         public async Task DeleteSystemPromptAsync_RemovesPrompt()
         {
             // Arrange
-            string promptId = "prompt-to-delete";
-            SystemPrompt testPrompt = new SystemPrompt
+            string promptId = "test-delete-prompt";
+            SystemPrompt prompt = new SystemPrompt
             {
                 Id = promptId,
                 UserId = _testUserId,
-                PromptLines = new List<string> { "To be deleted" }
+                PromptLines = new List<string> { "Test delete line" }
             };
-            _service.AddTestPrompt(testPrompt);
-            
-            // Verify prompt exists before deleting
-            Assert.NotNull(await _service.GetSystemPromptByIdAsync(promptId));
+            _service.AddTestPrompt(prompt);
 
             // Act
             bool result = await _service.DeleteSystemPromptAsync(promptId);
-            SystemPrompt deletedPrompt = await _service.GetSystemPromptByIdAsync(promptId);
+            SystemPrompt? retrievedPrompt = await _service.GetSystemPromptByIdAsync(promptId);
 
             // Assert
             Assert.True(result);
-            Assert.Null(deletedPrompt);
+            Assert.Null(retrievedPrompt);
         }
 
         [Fact]
