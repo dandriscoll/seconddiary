@@ -111,7 +111,7 @@ namespace SecondDiary.Tests.Services
             _service.AddTestPrompt(testPrompt);
 
             // Act
-            SystemPrompt result = await _service.GetSystemPromptByIdAsync(promptId);
+            SystemPrompt? result = await _service.GetSystemPromptByIdAsync(promptId);
 
             // Assert
             Assert.NotNull(result);

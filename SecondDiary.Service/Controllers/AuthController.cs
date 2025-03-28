@@ -8,16 +8,10 @@ namespace SecondDiary.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AuthController : ControllerBase
+    public class AuthController(IConfiguration configuration, IUserContext userContext) : ControllerBase
     {
-        private readonly IConfiguration _configuration;
-        private readonly IUserContext _userContext;
-
-        public AuthController(IConfiguration configuration, IUserContext userContext)
-        {
-            _configuration = configuration;
-            _userContext = userContext;
-        }
+        private readonly IConfiguration _configuration = configuration;
+        private readonly IUserContext _userContext = userContext;
 
         [HttpGet("me")]
         [Authorize]

@@ -12,18 +12,10 @@ namespace SecondDiary.API.Services
         Task<string> GetRecommendationAsync(string userId);
     }
 
-    public class DiaryService : IDiaryService
+    public class DiaryService(ICosmosDbService cosmosDbService, IEncryptionService encryptionService) : IDiaryService
     {
-        private readonly ICosmosDbService _cosmosDbService;
-        private readonly IEncryptionService _encryptionService;
-
-        public DiaryService(
-            ICosmosDbService cosmosDbService,
-            IEncryptionService encryptionService)
-        {
-            _cosmosDbService = cosmosDbService;
-            _encryptionService = encryptionService;
-        }
+        private readonly ICosmosDbService _cosmosDbService = cosmosDbService;
+        private readonly IEncryptionService _encryptionService = encryptionService;
 
         public async Task<DiaryEntry> CreateEntryAsync(DiaryEntry entry)
         {

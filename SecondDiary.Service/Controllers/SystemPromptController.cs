@@ -7,24 +7,16 @@ namespace SecondDiary.API.Controllers
     [ApiController]
     [Authorize]
     [Route("api/[controller]")]
-    public class SystemPromptController : ControllerBase
+    public class SystemPromptController(
+        ISystemPromptService systemPromptService,
+        IWebHostEnvironment environment,
+        IOpenAIService openAIService,
+        IUserContext userContext) : ControllerBase
     {
-        private readonly ISystemPromptService _systemPromptService;
-        private readonly IWebHostEnvironment _environment;
-        private readonly IOpenAIService _openAIService;
-        private readonly IUserContext _userContext;
-
-        public SystemPromptController(
-            ISystemPromptService systemPromptService,
-            IWebHostEnvironment environment,
-            IOpenAIService openAIService,
-            IUserContext userContext)
-        {
-            _systemPromptService = systemPromptService ?? throw new ArgumentNullException(nameof(systemPromptService));
-            _environment = environment ?? throw new ArgumentNullException(nameof(environment));
-            _openAIService = openAIService ?? throw new ArgumentNullException(nameof(openAIService));
-            _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext));
-        }
+        private readonly ISystemPromptService _systemPromptService = systemPromptService;
+        private readonly IWebHostEnvironment _environment = environment;
+        private readonly IOpenAIService _openAIService = openAIService;
+        private readonly IUserContext _userContext = userContext;
 
         private string GetUserId()
         {

@@ -9,15 +9,9 @@ namespace SecondDiary.API.Services
         Task RemoveLineAsync(string userId, string line);
     }
 
-    public class SystemPromptService : ISystemPromptService
+    public class SystemPromptService(ICosmosDbService cosmosDbService) : ISystemPromptService
     {
-        private readonly ICosmosDbService _cosmosDbService;
-        private const string DefaultSystemPromptLine = "You are a helpful AI assistant that provides thoughtful recommendations based on diary entries.";
-
-        public SystemPromptService(ICosmosDbService cosmosDbService)
-        {
-            _cosmosDbService = cosmosDbService;
-        }
+        private readonly ICosmosDbService _cosmosDbService = cosmosDbService;
 
         public async Task<string> GetSystemPromptAsync(string userId)
         {
@@ -36,11 +30,6 @@ namespace SecondDiary.API.Services
         {
             SystemPrompt systemPrompt = await GetOrCreatePromptAsync(userId);
             systemPrompt.PromptLines.Remove(line);
-            
-            // Make sure we have at least one line in the prompt
-            if (systemPrompt.PromptLines.Count == 0)
-                systemPrompt.PromptLines.Add(DefaultSystemPromptLine);
-            
             await _cosmosDbService.UpdateItemAsync(systemPrompt);
         }
 
@@ -56,7 +45,7 @@ namespace SecondDiary.API.Services
                 {
                     Id = promptId,
                     UserId = userId,
-                    PromptLines = new List<string> { DefaultSystemPromptLine }
+                    PromptLines = new List<string> { "You are a helpful AI assistant that provides thoughtful recommendations based on diary entries." }
                 };
                 await _cosmosDbService.CreateItemAsync(systemPrompt);
             }

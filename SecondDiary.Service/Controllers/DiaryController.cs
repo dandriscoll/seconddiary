@@ -8,21 +8,14 @@ namespace SecondDiary.API.Controllers
     [ApiController]
     [Authorize]
     [Route("api/[controller]")]
-    public class DiaryController : ControllerBase
+    public class DiaryController(
+        IDiaryService diaryService,
+        IWebHostEnvironment environment,
+        IUserContext userContext) : ControllerBase
     {
-        private readonly IDiaryService _diaryService;
-        private readonly IWebHostEnvironment _environment;
-        private readonly IUserContext _userContext;
-
-        public DiaryController(
-            IDiaryService diaryService,
-            IWebHostEnvironment environment,
-            IUserContext userContext)
-        {
-            _diaryService = diaryService ?? throw new ArgumentNullException(nameof(diaryService));
-            _environment = environment ?? throw new ArgumentNullException(nameof(environment));
-            _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext));
-        }
+        private readonly IDiaryService _diaryService = diaryService ?? throw new ArgumentNullException(nameof(diaryService));
+        private readonly IWebHostEnvironment _environment = environment ?? throw new ArgumentNullException(nameof(environment));
+        private readonly IUserContext _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext));
 
         private string GetUserId()
         {
