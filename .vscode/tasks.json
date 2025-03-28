@@ -7,7 +7,7 @@
 			"type": "process",
 			"args": [
 				"clean",
-				"${workspaceFolder}/SecondDiary.API",
+				"${workspaceFolder}/SecondDiary.Service",
 				"/property:GenerateFullPaths=true",
 				"/consoleloggerparameters:NoSummary"
 			],
@@ -19,7 +19,7 @@
 			"type": "process",
 			"args": [
 				"publish",
-				"${workspaceFolder}/SecondDiary.API",
+				"${workspaceFolder}/SecondDiary.Service",
 				"--configuration",
 				"Release",
 				"/property:GenerateFullPaths=true",
