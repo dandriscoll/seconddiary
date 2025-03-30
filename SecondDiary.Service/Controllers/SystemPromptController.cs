@@ -38,9 +38,13 @@ namespace SecondDiary.Controllers
             return Ok(prompt);
         }
 
-        [HttpPost("line")]
-        public async Task<IActionResult> AddLineToPrompt([FromBody] string? line)
+        [HttpPost]
+        [Consumes("text/plain")]
+        public async Task<IActionResult> AddLineToPrompt()
         {
+            using StreamReader reader = new StreamReader(Request.Body);
+            string line = await reader.ReadToEndAsync();
+            
             if (string.IsNullOrEmpty(line))
                 return BadRequest("Line cannot be empty");
 
