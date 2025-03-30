@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace SecondDiary.Tests.Integration
 {
@@ -72,10 +73,13 @@ namespace SecondDiary.Tests.Integration
             
             // Verify auth config has the expected properties with test values
             Assert.True(authConfig.TryGetProperty("clientId", out var clientId));
-            Assert.Equal("test-client-id", clientId.GetString());
+            IConfiguration configuration = _factory.Services.GetRequiredService<IConfiguration>();
+            string? expectedClientId = configuration["AzureAd:ClientId"];
+            Assert.Equal(expectedClientId, clientId.GetString());
             
             Assert.True(authConfig.TryGetProperty("tenantId", out var tenantId));
-            Assert.Equal("test-tenant-id", tenantId.GetString());
+            string? expectedTenantId = configuration["AzureAd:TenantId"];
+            Assert.Equal(expectedTenantId, tenantId.GetString());
             
             // Additional validation could include checking redirectUri, authority, etc.
         }

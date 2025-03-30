@@ -23,20 +23,20 @@ namespace SecondDiary.Services
         {
             SystemPrompt systemPrompt = await GetOrCreatePromptAsync(userId);
             systemPrompt.Lines.Add(line);
-            await _cosmosDbService.UpdateItemAsync(systemPrompt);
+            await _cosmosDbService.UpdateSystemPromptAsync(systemPrompt);
         }
         
         public async Task RemoveLineAsync(string userId, string line)
         {
             SystemPrompt systemPrompt = await GetOrCreatePromptAsync(userId);
             systemPrompt.Lines.Remove(line);
-            await _cosmosDbService.UpdateItemAsync(systemPrompt);
+            await _cosmosDbService.UpdateSystemPromptAsync(systemPrompt);
         }
 
         private async Task<SystemPrompt> GetOrCreatePromptAsync(string userId)
         {
             string promptId = $"{userId}-systemprompt";
-            SystemPrompt? systemPrompt = await _cosmosDbService.GetItemAsync<SystemPrompt>(promptId, userId);
+            SystemPrompt? systemPrompt = await _cosmosDbService.GetSystemPromptAsync(promptId, userId);
             
             if (systemPrompt == null)
             {
@@ -47,7 +47,7 @@ namespace SecondDiary.Services
                     UserId = userId,
                     Lines = new List<string> { "You are a helpful AI assistant that provides thoughtful recommendations based on diary entries." }
                 };
-                await _cosmosDbService.CreateItemAsync(systemPrompt);
+                await _cosmosDbService.CreateSystemPromptAsync(systemPrompt);
             }
             
             return systemPrompt;

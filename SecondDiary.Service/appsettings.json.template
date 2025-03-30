@@ -23,7 +23,8 @@
     "Endpoint": "your-cosmos-db-endpoint",
     "Key": "your-cosmos-db-key",
     "DatabaseName": "SecondDiary",
-    "ContainerName": "DiaryEntries"
+    "DiaryEntriesContainerName": "DiaryEntries"
+    "SystemPromptsContainerName": "DiaryEntries"
   },
   "Encryption": {
     "Key": "your-32-byte-encryption-key-here"

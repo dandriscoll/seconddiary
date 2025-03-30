@@ -19,32 +19,32 @@ namespace SecondDiary.Services
 
         public async Task<DiaryEntry> CreateEntryAsync(DiaryEntry entry)
         {
-            return await _cosmosDbService.CreateEntryAsync(entry);
+            return await _cosmosDbService.CreateDiaryEntryAsync(entry);
         }
 
         public async Task<DiaryEntry?> GetEntryAsync(string id, string userId)
         {
-            return await _cosmosDbService.GetEntryAsync(id, userId);
+            return await _cosmosDbService.GetDiaryEntryAsync(id, userId);
         }
 
         public async Task<IEnumerable<DiaryEntry>> GetEntriesAsync(string userId)
         {
-            return await _cosmosDbService.GetEntriesAsync(userId);
+            return await _cosmosDbService.GetDiaryEntriesAsync(userId);
         }
 
         public async Task<DiaryEntry> UpdateEntryAsync(DiaryEntry entry)
         {
-            return await _cosmosDbService.UpdateEntryAsync(entry);
+            return await _cosmosDbService.UpdateDiaryEntryAsync(entry);
         }
 
         public async Task DeleteEntryAsync(string id, string userId)
         {
-            await _cosmosDbService.DeleteEntryAsync(id, userId);
+            await _cosmosDbService.DeleteDiaryEntryAsync(id, userId);
         }
 
         public async Task<string> GetRecommendationAsync(string userId)
         {
-            var entries = await _cosmosDbService.GetEntriesAsync(userId);
+            var entries = await _cosmosDbService.GetDiaryEntriesAsync(userId);
             if (!entries.Any())
             {
                 return "Start writing your first diary entry!";

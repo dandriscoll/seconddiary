@@ -36,7 +36,7 @@ namespace SecondDiary.Tests.Services
             };
             
             _mockCosmosDbService
-                .Setup(x => x.GetItemAsync<SystemPrompt>(promptId, userId))
+                .Setup(x => x.GetSystemPromptAsync(promptId, userId))
                 .ReturnsAsync(existingPrompt);
                 
             // Act
@@ -44,7 +44,7 @@ namespace SecondDiary.Tests.Services
             
             // Assert
             Assert.Equal(existingPrompt, result);
-            _mockCosmosDbService.Verify(x => x.CreateItemAsync(It.IsAny<SystemPrompt>()), Times.Never);
+            _mockCosmosDbService.Verify(x => x.CreateSystemPromptAsync(It.IsAny<SystemPrompt>()), Times.Never);
         }
         
         [Fact]
@@ -55,12 +55,12 @@ namespace SecondDiary.Tests.Services
             string promptId = $"{userId}-systemprompt";
             
             _mockCosmosDbService
-                .Setup(x => x.GetItemAsync<SystemPrompt>(promptId, userId))
+                .Setup(x => x.GetSystemPromptAsync(promptId, userId))
                 .ReturnsAsync((SystemPrompt?)null);
                 
             SystemPrompt? capturedPrompt = null;
             _mockCosmosDbService
-                .Setup(x => x.CreateItemAsync(It.IsAny<SystemPrompt>()))
+                .Setup(x => x.CreateSystemPromptAsync(It.IsAny<SystemPrompt>()))
                 .Callback<SystemPrompt>(p => capturedPrompt = p)
                 .ReturnsAsync(() => capturedPrompt!);
                 
@@ -69,7 +69,7 @@ namespace SecondDiary.Tests.Services
             
             // Assert
             Assert.NotNull(result);
-            _mockCosmosDbService.Verify(x => x.CreateItemAsync(It.IsAny<SystemPrompt>()), Times.Once);
+            _mockCosmosDbService.Verify(x => x.CreateSystemPromptAsync(It.IsAny<SystemPrompt>()), Times.Once);
             Assert.Same(capturedPrompt, result);
         }
         
@@ -82,12 +82,12 @@ namespace SecondDiary.Tests.Services
             string expectedDefaultLine = "You are a helpful AI assistant that provides thoughtful recommendations based on diary entries.";
             
             _mockCosmosDbService
-                .Setup(x => x.GetItemAsync<SystemPrompt>(promptId, userId))
+                .Setup(x => x.GetSystemPromptAsync(promptId, userId))
                 .ReturnsAsync((SystemPrompt?)null);
                 
             SystemPrompt? capturedPrompt = null;
             _mockCosmosDbService
-                .Setup(x => x.CreateItemAsync(It.IsAny<SystemPrompt>()))
+                .Setup(x => x.CreateSystemPromptAsync(It.IsAny<SystemPrompt>()))
                 .Callback<SystemPrompt>(p => capturedPrompt = p)
                 .ReturnsAsync(() => capturedPrompt!);
                 

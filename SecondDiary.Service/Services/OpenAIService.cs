@@ -41,7 +41,7 @@ namespace SecondDiary.Services
         public async Task<string> GetRecommendationsAsync(string userId)
         {
             // Get user's diary entries
-            IEnumerable<DiaryEntry> entries = await _cosmosDbService.GetEntriesAsync(userId);
+            IEnumerable<DiaryEntry> entries = await _cosmosDbService.GetDiaryEntriesAsync(userId);
             
             // Get the system prompt
             string systemPrompt = await _systemPromptService.GetSystemPromptAsync(userId);

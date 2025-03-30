@@ -121,6 +121,13 @@ namespace SecondDiary
                 app.UseSwaggerUI();
                 app.UseDeveloperExceptionPage();
             }
+
+            // Initialize Cosmos DB
+            using (IServiceScope scope = app.ApplicationServices.CreateScope())
+            {
+                ICosmosDbService cosmosDbService = scope.ServiceProvider.GetRequiredService<ICosmosDbService>();
+                cosmosDbService.InitializeAsync().GetAwaiter().GetResult();
+            }
             
             // Log all requests and responses
             app.Use(async (context, next) =>
