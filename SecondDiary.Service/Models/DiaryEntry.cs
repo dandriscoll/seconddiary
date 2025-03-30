@@ -15,22 +15,14 @@ namespace SecondDiary.Models
 
         [JsonPropertyName("date")]
         [JsonProperty(PropertyName = "date")]
-        public DateTime Date { get; set; }
+        public DateTimeOffset Date { get; set; }
 
         [JsonPropertyName("thought")]
         [JsonProperty(PropertyName = "thought")]
         public string? Thought { get; set; }
 
-        [JsonPropertyName("encryptedThought")]
-        [JsonProperty(PropertyName = "encryptedThought")]
-        public string? EncryptedThought { get; set; }
-
         [JsonPropertyName("context")]
         [JsonProperty(PropertyName = "context")]
         public string? Context { get; set; }
-
-        [JsonPropertyName("encryptedContext")]
-        [JsonProperty(PropertyName = "encryptedContext")]
-        public string? EncryptedContext { get; set; }
     }
 }

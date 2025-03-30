@@ -1,3 +1,4 @@
+using Moq;
 using SecondDiary.Models;
 using SecondDiary.Services;
 using System.Reflection;
@@ -7,14 +8,23 @@ namespace SecondDiary.Tests.Services
     public class SystemPromptServiceTests
     {
         private readonly Mock<ICosmosDbService> _mockCosmosDbService;
+        private readonly Mock<IEncryptionService> _mockEncryptionService;
         private readonly SystemPromptService _systemPromptService;
         private readonly MethodInfo _getOrCreatePromptAsyncMethod;
 
         public SystemPromptServiceTests()
         {
             _mockCosmosDbService = new Mock<ICosmosDbService>();
-            _systemPromptService = new SystemPromptService(_mockCosmosDbService.Object);
+            _mockEncryptionService = new Mock<IEncryptionService>();
+            _mockEncryptionService.Setup(x => x.Encrypt(It.IsAny<string>()))
+                .Returns<string>(input => "ENCRYPTED:" + input);
+            _mockEncryptionService.Setup(x => x.Decrypt(It.IsAny<string>()))
+                .Returns<string>(input => input.StartsWith("ENCRYPTED:") 
+                    ? input.Substring(10) 
+                    : input);
+            _systemPromptService = new SystemPromptService(_mockCosmosDbService.Object, _mockEncryptionService.Object);
             
+            // Get the private method via reflection
             // Get the private method via reflection
             _getOrCreatePromptAsyncMethod = typeof(SystemPromptService).GetMethod(
                 "GetOrCreatePromptAsync", 
@@ -98,7 +108,8 @@ namespace SecondDiary.Tests.Services
             Assert.Equal(promptId, result.Id);
             Assert.Equal(userId, result.UserId);
             Assert.Single(result.Lines);
-            Assert.Equal(expectedDefaultLine, result.Lines[0]);
+            string decryptedLine = _mockEncryptionService.Object.Decrypt(result.Lines[0]);
+            Assert.Equal(expectedDefaultLine, decryptedLine);
         }
 
         private async Task<SystemPrompt> InvokeGetOrCreatePromptAsync(string userId)

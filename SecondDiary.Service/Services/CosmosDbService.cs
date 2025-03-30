@@ -32,14 +32,14 @@ namespace SecondDiary.Services
 
             try
             {
-                DatabaseResponse databaseResponse = await _cosmosClient.CreateDatabaseIfNotExistsAsync(_diaryContainer.Database.Id, 400);
+                DatabaseResponse databaseResponse = await _cosmosClient.CreateDatabaseIfNotExistsAsync(_diaryContainer.Database.Id);
                 Database database = databaseResponse.Database;
                 _logger.LogInformation($"Database {databaseResponse.Database.Id} initialized");
 
-                await database.CreateContainerIfNotExistsAsync(_diaryContainer.Id, "/UserId");
+                await database.CreateContainerIfNotExistsAsync(_diaryContainer.Id, "/userId");
                 _logger.LogInformation($"Container {_diaryContainer.Id} initialized");
 
-                await database.CreateContainerIfNotExistsAsync(_promptContainer.Id, "/UserId");
+                await database.CreateContainerIfNotExistsAsync(_promptContainer.Id, "/userId");
                 _logger.LogInformation($"Container {_promptContainer.Id} initialized");
 
                 _logger.LogInformation("Cosmos DB initialization completed successfully");
@@ -53,14 +53,20 @@ namespace SecondDiary.Services
 
         public async Task<DiaryEntry> CreateDiaryEntryAsync(DiaryEntry entry)
         {
-            entry.EncryptedThought = entry.Thought != null ? _encryptionService.Encrypt(entry.Thought) : null;
-            entry.Thought = null;
+            // Create a new entry to avoid modifying the input object
+            DiaryEntry entryToSave = new DiaryEntry
+            {
+                Id = entry.Id,
+                UserId = entry.UserId,
+                Date = entry.Date,
+                Thought = entry.Thought != null ? _encryptionService.Encrypt(entry.Thought) : null,
+                Context = entry.Context != null ? _encryptionService.Encrypt(entry.Context) : null
+            };
 
-            entry.EncryptedContext = entry.Context != null ? _encryptionService.Encrypt(entry.Context) : null;
-            entry.Context = null;
-
-            ItemResponse<DiaryEntry> response = await _diaryContainer.CreateItemAsync(entry, new PartitionKey(entry.UserId));
-            return response.Resource;
+            ItemResponse<DiaryEntry> response = await _diaryContainer.CreateItemAsync(entryToSave, new PartitionKey(entryToSave.UserId));
+            
+            // Return the original entry for the user
+            return entry;
         }
 
         public async Task<DiaryEntry?> GetDiaryEntryAsync(string id, string userId)
@@ -70,11 +76,12 @@ namespace SecondDiary.Services
                 ItemResponse<DiaryEntry> response = await _diaryContainer.ReadItemAsync<DiaryEntry>(id, new PartitionKey(userId));
                 DiaryEntry entry = response.Resource;
 
-                if (entry.EncryptedThought != null)
-                    entry.Thought = _encryptionService.Decrypt(entry.EncryptedThought);
+                // Decrypt the thought and context
+                if (entry.Thought != null)
+                    entry.Thought = _encryptionService.Decrypt(entry.Thought);
 
-                if (entry.EncryptedContext != null)
-                    entry.Context = _encryptionService.Decrypt(entry.EncryptedContext);
+                if (entry.Context != null)
+                    entry.Context = _encryptionService.Decrypt(entry.Context);
 
                 return entry;
             }
@@ -97,11 +104,12 @@ namespace SecondDiary.Services
                 FeedResponse<DiaryEntry> response = await iterator.ReadNextAsync();
                 foreach (DiaryEntry entry in response)
                 {
-                    if (entry.EncryptedThought != null)
-                        entry.Thought = _encryptionService.Decrypt(entry.EncryptedThought);
+                    // Decrypt the thought and context
+                    if (entry.Thought != null)
+                        entry.Thought = _encryptionService.Decrypt(entry.Thought);
 
-                    if (entry.EncryptedContext != null)
-                        entry.Context = _encryptionService.Decrypt(entry.EncryptedContext);
+                    if (entry.Context != null)
+                        entry.Context = _encryptionService.Decrypt(entry.Context);
 
                     entries.Add(entry);
                 }
@@ -112,14 +120,20 @@ namespace SecondDiary.Services
 
         public async Task<DiaryEntry> UpdateDiaryEntryAsync(DiaryEntry entry)
         {
-            entry.EncryptedThought = entry.Thought != null ? _encryptionService.Encrypt(entry.Thought) : null;
-            entry.Thought = null;
+            // Create a clone of the entry with encrypted values
+            DiaryEntry entryToSave = new DiaryEntry
+            {
+                Id = entry.Id,
+                UserId = entry.UserId,
+                Date = entry.Date,
+                Thought = entry.Thought != null ? _encryptionService.Encrypt(entry.Thought) : null,
+                Context = entry.Context != null ? _encryptionService.Encrypt(entry.Context) : null
+            };
 
-            entry.EncryptedContext = entry.Context != null ? _encryptionService.Encrypt(entry.Context) : null;
-            entry.Context = null;
-
-            ItemResponse<DiaryEntry> response = await _diaryContainer.UpsertItemAsync(entry, new PartitionKey(entry.UserId));
-            return response.Resource;
+            ItemResponse<DiaryEntry> response = await _diaryContainer.UpsertItemAsync(entryToSave, new PartitionKey(entry.UserId));
+            
+            // Return the original entry with unencrypted values
+            return entry;
         }
 
         public async Task DeleteDiaryEntryAsync(string id, string userId)

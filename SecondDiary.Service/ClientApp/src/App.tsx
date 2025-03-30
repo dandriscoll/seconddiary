@@ -143,7 +143,26 @@ const App: React.FC = () => {
       document.body.classList.remove('light-theme', 'dark-theme');
       document.body.classList.add(`${theme}-theme`);
     }, [theme]);
-  
+
+    const toLocalISOString = (date = new Date()): string => {
+      const pad = (num: number) => String(num).padStart(2, '0');
+      const year = date.getFullYear();
+      const month = pad(date.getMonth() + 1);
+      const day = pad(date.getDate());
+      const hour = pad(date.getHours());
+      const minute = pad(date.getMinutes());
+      const second = pad(date.getSeconds());
+      const millisecond = String(date.getMilliseconds()).padStart(3, '0');
+    
+      // Calculate timezone offset in minutes and convert it to hours and minutes.
+      const timezoneOffset = -date.getTimezoneOffset(); // offset in minutes (reverse sign)
+      const sign = timezoneOffset >= 0 ? '+' : '-';
+      const offsetHour = pad(Math.floor(Math.abs(timezoneOffset) / 60));
+      const offsetMinute = pad(Math.abs(timezoneOffset) % 60);
+    
+      return `${year}-${month}-${day}T${hour}:${minute}:${second}.${millisecond}${sign}${offsetHour}:${offsetMinute}`;
+    }
+    
     const handleSubmit = async (e: React.FormEvent): Promise<void> => {
       e.preventDefault();
       
@@ -156,33 +175,15 @@ const App: React.FC = () => {
         const currentToken: string | null = await acquireToken();
         if (!currentToken) throw new Error('Failed to acquire token');
         
-        // Debug: Check token format
-        if (!currentToken.includes('.')) {
-          console.error('Token is not in JWT format (missing dots):', currentToken.substring(0, 15) + '...');
-          throw new Error('Cannot proceed with non-JWT token format');
-        } else {
-          console.log('Token appears to be in correct JWT format with dots');
-          // Log the parts of the token (don't log in production!)
-          const [header, payload, signature] = currentToken.split('.');
-          console.log('Token parts:', { 
-            headerLength: header?.length || 0, 
-            payloadLength: payload?.length || 0, 
-            signatureLength: signature?.length || 0 
-          });
-        }
-        
-        // Ensure proper token transmission with correct Bearer format
-        const authHeader: string = `Bearer ${currentToken.trim()}`;
-        console.log('Using Authorization header:', authHeader.substring(0, 20) + '...');
-        
-        // Replace with your actual API endpoint
+        console.log('DATE: ' + toLocalISOString());
         const response: Response = await fetch('/api/diary', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': authHeader
+            'Authorization': `Bearer ${currentToken.trim()}`,
+            'X-Entry-Date': toLocalISOString()
           },
-          body: JSON.stringify({ thought, context }),
+          body: JSON.stringify({ thought, context })
         });
         
         if (!response.ok) {

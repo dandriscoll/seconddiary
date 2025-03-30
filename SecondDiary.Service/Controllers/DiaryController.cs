@@ -34,16 +34,24 @@ namespace SecondDiary.Controllers
         public async Task<ActionResult<DiaryEntry>> CreateEntry([FromBody] DiaryEntryRequest? request)
         {
             if (request == null)
-                return BadRequest("Request body cannot be null");
+            return BadRequest("Request body cannot be null");
 
             if (string.IsNullOrEmpty(request.Thought))
-                return BadRequest("Thought cannot be empty");
+            return BadRequest("Thought cannot be empty");
+
+            DateTimeOffset entryDate = DateTimeOffset.UtcNow;
+            
+            // Try to get date from header
+            if (Request.Headers.TryGetValue("X-Entry-Date", out Microsoft.Extensions.Primitives.StringValues dateHeader) && !string.IsNullOrEmpty(dateHeader))
+                if (DateTimeOffset.TryParse(dateHeader, out DateTimeOffset parsedDate))
+                    entryDate = parsedDate;
 
             DiaryEntry entry = new DiaryEntry
             {
                 UserId = GetUserId(),
-                Date = DateTime.UtcNow,
-                Thought = request.Thought
+                Date = entryDate,
+                Thought = request.Thought,
+                Context = request.Context
             };
 
             DiaryEntry createdEntry = await _diaryService.CreateEntryAsync(entry);
