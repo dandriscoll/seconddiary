@@ -175,7 +175,6 @@ const App: React.FC = () => {
         const currentToken: string | null = await acquireToken();
         if (!currentToken) throw new Error('Failed to acquire token');
         
-        console.log('DATE: ' + toLocalISOString());
         const response: Response = await fetch('/api/diary', {
           method: 'POST',
           headers: {
