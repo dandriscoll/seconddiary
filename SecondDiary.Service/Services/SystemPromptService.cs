@@ -1,6 +1,6 @@
-using SecondDiary.API.Models;
+using SecondDiary.Models;
 
-namespace SecondDiary.API.Services
+namespace SecondDiary.Services
 {
     public interface ISystemPromptService
     {
@@ -16,20 +16,20 @@ namespace SecondDiary.API.Services
         public async Task<string> GetSystemPromptAsync(string userId)
         {
             SystemPrompt systemPrompt = await GetOrCreatePromptAsync(userId);
-            return string.Join(Environment.NewLine, systemPrompt.PromptLines);
+            return string.Join(Environment.NewLine, systemPrompt.Lines);
         }
 
         public async Task AddLineToPromptAsync(string userId, string line)
         {
             SystemPrompt systemPrompt = await GetOrCreatePromptAsync(userId);
-            systemPrompt.PromptLines.Add(line);
+            systemPrompt.Lines.Add(line);
             await _cosmosDbService.UpdateItemAsync(systemPrompt);
         }
         
         public async Task RemoveLineAsync(string userId, string line)
         {
             SystemPrompt systemPrompt = await GetOrCreatePromptAsync(userId);
-            systemPrompt.PromptLines.Remove(line);
+            systemPrompt.Lines.Remove(line);
             await _cosmosDbService.UpdateItemAsync(systemPrompt);
         }
 
@@ -45,7 +45,7 @@ namespace SecondDiary.API.Services
                 {
                     Id = promptId,
                     UserId = userId,
-                    PromptLines = new List<string> { "You are a helpful AI assistant that provides thoughtful recommendations based on diary entries." }
+                    Lines = new List<string> { "You are a helpful AI assistant that provides thoughtful recommendations based on diary entries." }
                 };
                 await _cosmosDbService.CreateItemAsync(systemPrompt);
             }

@@ -1,9 +1,9 @@
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Options;
-using SecondDiary.API.Models;
+using SecondDiary.Models;
 using System.Reflection;
 
-namespace SecondDiary.API.Services
+namespace SecondDiary.Services
 {
     public interface ICosmosDbService
     {

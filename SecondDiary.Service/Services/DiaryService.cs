@@ -1,6 +1,6 @@
-using SecondDiary.API.Models;
+using SecondDiary.Models;
 
-namespace SecondDiary.API.Services
+namespace SecondDiary.Services
 {
     public interface IDiaryService
     {

@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace SecondDiary.API.Services
+namespace SecondDiary.Services
 {
     public interface IEncryptionService
     {

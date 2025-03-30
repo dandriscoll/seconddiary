@@ -1,9 +1,5 @@
-using SecondDiary.API.Models;
+using SecondDiary.Models;
 using SecondDiary.Tests.Mocks;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Xunit;
 
 namespace SecondDiary.Tests.Services
 {
@@ -84,7 +80,7 @@ namespace SecondDiary.Tests.Services
             SystemPrompt newPrompt = new SystemPrompt
             {
                 UserId = _testUserId,
-                PromptLines = new List<string> { "Test content" }
+                Lines = new List<string> { "Test content" }
             };
 
             // Act
@@ -94,7 +90,7 @@ namespace SecondDiary.Tests.Services
             Assert.NotNull(result);
             Assert.NotNull(result.Id);
             Assert.Equal(newPrompt.UserId, result.UserId);
-            Assert.Equal(newPrompt.PromptLines, result.PromptLines);
+            Assert.Equal(newPrompt.Lines, result.Lines);
         }
 
         [Fact]
@@ -106,7 +102,7 @@ namespace SecondDiary.Tests.Services
             {
                 Id = promptId,
                 UserId = _testUserId,
-                PromptLines = new List<string> { "Test content" }
+                Lines = new List<string> { "Test content" }
             };
             _service.AddTestPrompt(testPrompt);
 
@@ -117,7 +113,7 @@ namespace SecondDiary.Tests.Services
             Assert.NotNull(result);
             Assert.Equal(promptId, result.Id);
             Assert.Equal(testPrompt.UserId, result.UserId);
-            Assert.Equal(testPrompt.PromptLines, result.PromptLines);
+            Assert.Equal(testPrompt.Lines, result.Lines);
         }
 
         [Fact]
@@ -129,7 +125,7 @@ namespace SecondDiary.Tests.Services
             {
                 Id = promptId,
                 UserId = _testUserId,
-                PromptLines = new List<string> { "Test delete line" }
+                Lines = new List<string> { "Test delete line" }
             };
             _service.AddTestPrompt(prompt);
 
@@ -153,13 +149,13 @@ namespace SecondDiary.Tests.Services
             { 
                 Id = "test-1", 
                 UserId = "user1",
-                PromptLines = new List<string> { "Content 1" } 
+                Lines = new List<string> { "Content 1" } 
             };
             SystemPrompt prompt2 = new SystemPrompt 
             { 
                 Id = "test-2", 
                 UserId = "user2",
-                PromptLines = new List<string> { "Content 2" } 
+                Lines = new List<string> { "Content 2" } 
             };
             _service.AddTestPrompt(prompt1);
             _service.AddTestPrompt(prompt2);

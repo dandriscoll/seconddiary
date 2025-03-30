@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace SecondDiary.API.Models
+namespace SecondDiary.Models
 {
     public class SystemPrompt
     {
@@ -10,9 +10,7 @@ namespace SecondDiary.API.Models
         [JsonPropertyName("userId")]
         public string UserId { get; set; } = string.Empty;
 
-        [JsonPropertyName("promptLines")]
-        public List<string> PromptLines { get; set; } = new List<string> { 
-            "You are a helpful AI assistant that provides thoughtful recommendations based on diary entries." 
-        };
+        [JsonPropertyName("lines")]
+        public List<string> Lines { get; set; } = new List<string>();
     }
 }

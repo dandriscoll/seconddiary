@@ -1,8 +1,8 @@
-namespace SecondDiary.API.Models
+namespace SecondDiary.Models
 {
-    public class DiaryEntryRequest
+    public class DiaryEntryRequest(string? context = null, string thought = "")
     {
-        public string? Context { get; set; }
-        public string Thought { get; set; } = string.Empty;
+        public string? Context { get; set; } = context;
+        public string Thought { get; set; } = thought;
     }
-} 
+}

@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace SecondDiary.API.Models
+namespace SecondDiary.Models
 {
     public class DiaryEntry
     {

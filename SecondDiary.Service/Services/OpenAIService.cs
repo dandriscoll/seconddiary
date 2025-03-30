@@ -2,10 +2,10 @@ using Azure;
 using Azure.AI.OpenAI;
 using Microsoft.Extensions.Options;
 using OpenAI.Chat;
-using SecondDiary.API.Models;
+using SecondDiary.Models;
 using System.Text;
 
-namespace SecondDiary.API.Services
+namespace SecondDiary.Services
 {
     public interface IOpenAIService
     {

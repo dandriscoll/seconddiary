@@ -1,8 +1,6 @@
-using Microsoft.Extensions.Configuration;
 using Microsoft.Identity.Web;
-using System.Security.Claims;
 
-namespace SecondDiary.API.Services
+namespace SecondDiary.Services
 {
     public interface IUserContext
     {

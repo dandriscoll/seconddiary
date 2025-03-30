@@ -3,11 +3,11 @@ using System.Net;
 
 namespace SecondDiary.Tests.Controllers
 {
-    public class AuthorizationTests : IClassFixture<WebApplicationFactory<SecondDiary.API.Program>>
+    public class AuthorizationTests : IClassFixture<WebApplicationFactory<SecondDiary.Program>>
     {
-        private readonly WebApplicationFactory<SecondDiary.API.Program> _factory;
+        private readonly WebApplicationFactory<SecondDiary.Program> _factory;
 
-        public AuthorizationTests(WebApplicationFactory<SecondDiary.API.Program> factory)
+        public AuthorizationTests(WebApplicationFactory<SecondDiary.Program> factory)
         {
             _factory = factory;
         }

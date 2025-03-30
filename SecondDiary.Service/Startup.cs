@@ -1,11 +1,10 @@
-using Microsoft.Extensions.FileProviders;
 using Newtonsoft.Json;
-using SecondDiary.API.Models;
-using SecondDiary.API.Services;
+using SecondDiary.Models;
+using SecondDiary.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
-namespace SecondDiary.API
+namespace SecondDiary
 {
     public class Startup
     {

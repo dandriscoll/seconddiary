@@ -1,8 +1,4 @@
-using Microsoft.Extensions.Configuration;
-using Moq;
-using SecondDiary.API.Services;
-using System.Text;
-using Xunit;
+using SecondDiary.Services;
 
 namespace SecondDiary.Tests.Services
 {

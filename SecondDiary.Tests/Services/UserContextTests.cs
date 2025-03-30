@@ -1,9 +1,6 @@
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using Moq;
-using SecondDiary.API.Services;
+using SecondDiary.Services;
 using System.Security.Claims;
-using Xunit;
 
 namespace SecondDiary.Tests.Services
 {

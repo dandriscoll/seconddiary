@@ -1,21 +1,14 @@
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.Configuration;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Xunit;
-using SecondDiary.API;
 using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
-using System.IO;
 
 namespace SecondDiary.Tests.Integration
 {
-    public class ApiIntegrationTests : IClassFixture<WebApplicationFactory<SecondDiary.API.Program>>
+    public class ApiIntegrationTests : IClassFixture<WebApplicationFactory<SecondDiary.Program>>
     {
-        private readonly WebApplicationFactory<SecondDiary.API.Program> _factory;
+        private readonly WebApplicationFactory<SecondDiary.Program> _factory;
 
-        public ApiIntegrationTests(WebApplicationFactory<SecondDiary.API.Program> factory)
+        public ApiIntegrationTests(WebApplicationFactory<SecondDiary.Program> factory)
         {
             _factory = factory.WithWebHostBuilder(builder =>
             {

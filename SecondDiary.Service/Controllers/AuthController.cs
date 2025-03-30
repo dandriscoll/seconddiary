@@ -2,9 +2,9 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Identity.Web;
-using SecondDiary.API.Services;
+using SecondDiary.Services;
 
-namespace SecondDiary.API.Controllers
+namespace SecondDiary.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]

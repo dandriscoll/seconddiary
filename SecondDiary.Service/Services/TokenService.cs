@@ -1,6 +1,6 @@
 using Microsoft.Identity.Web;
 
-namespace SecondDiary.API.Services
+namespace SecondDiary.Services
 {
     public interface ITokenService
     {

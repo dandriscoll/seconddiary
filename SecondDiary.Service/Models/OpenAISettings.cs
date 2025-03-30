@@ -1,4 +1,4 @@
-namespace SecondDiary.API.Models
+namespace SecondDiary.Models
 {
     public class OpenAISettings
     {

@@ -1,4 +1,4 @@
-namespace SecondDiary.API
+namespace SecondDiary
 {
     public class Program
     {

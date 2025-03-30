@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace SecondDiary.API.Controllers
+namespace SecondDiary.Controllers
 {
     [ApiController]
     public class HomeController : ControllerBase

@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Hosting;
-using SecondDiary.API.Controllers;
-using SecondDiary.API.Models;
-using SecondDiary.API.Services;
+using SecondDiary.Controllers;
+using SecondDiary.Services;
 
 namespace SecondDiary.Tests.Controllers
 {

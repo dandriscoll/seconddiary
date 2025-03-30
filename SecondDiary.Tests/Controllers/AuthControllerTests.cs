@@ -1,11 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using Moq;
-using SecondDiary.API.Controllers;
-using SecondDiary.API.Services;
+using SecondDiary.Controllers;
+using SecondDiary.Services;
 using System.Security.Claims;
-using Xunit;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 using System.Text.Json;
 
 namespace SecondDiary.Tests.Controllers

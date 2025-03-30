@@ -1,4 +1,4 @@
-namespace SecondDiary.API.Models
+namespace SecondDiary.Models
 {
     public class CosmosDbSettings
     {
@@ -7,4 +7,4 @@ namespace SecondDiary.API.Models
         public string DatabaseName { get; set; } = string.Empty;
         public string ContainerName { get; set; } = string.Empty;
     }
-} 
+}

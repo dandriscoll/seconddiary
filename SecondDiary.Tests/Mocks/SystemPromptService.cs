@@ -1,9 +1,5 @@
-using SecondDiary.API.Models;
-using SecondDiary.API.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using SecondDiary.Models;
+using SecondDiary.Services;
 
 #pragma warning disable CS1998 // Disable async warning for mock methods
 namespace SecondDiary.Tests.Mocks
@@ -24,7 +20,7 @@ namespace SecondDiary.Tests.Mocks
             { 
                 Id = "system-default", 
                 UserId = "system",
-                PromptLines = new List<string> { DefaultSystemPromptLine }
+                Lines = new List<string> { DefaultSystemPromptLine }
             };
             
             _prompts["system-default"] = defaultPrompt;
@@ -38,7 +34,7 @@ namespace SecondDiary.Tests.Mocks
                 return prompt;
                 
             if (_prompts.TryGetValue(userPromptKey, out SystemPrompt? systemPrompt))
-                return string.Join(Environment.NewLine, systemPrompt.PromptLines);
+                return string.Join(Environment.NewLine, systemPrompt.Lines);
             
             return DefaultSystemPromptLine;
         }
@@ -60,10 +56,10 @@ namespace SecondDiary.Tests.Mocks
             // Check if we have a system prompt object
             if (_prompts.TryGetValue(userPromptKey, out SystemPrompt? systemPrompt))
             {
-                if (systemPrompt.PromptLines == null)
-                    systemPrompt.PromptLines = new List<string>();
+                if (systemPrompt.Lines == null)
+                    systemPrompt.Lines = new List<string>();
                 
-                systemPrompt.PromptLines.Add(line);
+                systemPrompt.Lines.Add(line);
                 return;
             }
             
@@ -91,8 +87,8 @@ namespace SecondDiary.Tests.Mocks
             // Check if we have a system prompt object
             if (_prompts.TryGetValue(userPromptKey, out SystemPrompt? systemPrompt))
             {
-                if (systemPrompt.PromptLines != null)
-                    systemPrompt.PromptLines.Remove(line);
+                if (systemPrompt.Lines != null)
+                    systemPrompt.Lines.Remove(line);
                 
                 return;
             }
@@ -171,7 +167,7 @@ namespace SecondDiary.Tests.Mocks
             { 
                 Id = "system-default",
                 UserId = "system",
-                PromptLines = new List<string> { DefaultSystemPromptLine }
+                Lines = new List<string> { DefaultSystemPromptLine }
             };
             
             _prompts["system-default"] = defaultPrompt;

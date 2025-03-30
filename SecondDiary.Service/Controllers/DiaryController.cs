@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SecondDiary.API.Models;
-using SecondDiary.API.Services;
+using SecondDiary.Models;
+using SecondDiary.Services;
 
-namespace SecondDiary.API.Controllers
+namespace SecondDiary.Controllers
 {
     [ApiController]
     [Authorize]
