@@ -18,5 +18,12 @@ namespace SecondDiary.Services
         Task<IEnumerable<SystemPrompt>> GetSystemPromptsAsync(string userId);
         Task<SystemPrompt> UpdateSystemPromptAsync(SystemPrompt prompt);
         Task DeleteSystemPromptAsync(string id, string userId);
+
+        // Email Settings
+        Task<EmailSettings> CreateEmailSettingsAsync(EmailSettings settings);
+        Task<EmailSettings?> GetEmailSettingsAsync(string userId);
+        Task<IEnumerable<EmailSettings>> GetAllEmailSettingsAsync();
+        Task<EmailSettings> UpdateEmailSettingsAsync(EmailSettings settings);
+        Task DeleteEmailSettingsAsync(string userId);
     }
 }

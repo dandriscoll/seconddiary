@@ -4,8 +4,9 @@ namespace SecondDiary.Models
     {
         public required string Endpoint { get; set; }
         public required string Key { get; set; }
-        public required string DatabaseName { get; set; }
-        public required string DiaryEntriesContainerName { get; set; }
-        public required string SystemPromptsContainerName { get; set; }
+        public string DatabaseName { get; set; } = string.Empty;
+        public string DiaryEntriesContainerName { get; set; } = string.Empty;
+        public string SystemPromptsContainerName { get; set; } = string.Empty;
+        public string EmailSettingsContainerName { get; set; } = string.Empty;
     }
 }

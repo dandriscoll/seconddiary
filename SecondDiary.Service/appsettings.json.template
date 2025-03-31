@@ -23,10 +23,16 @@
     "Endpoint": "your-cosmos-db-endpoint",
     "Key": "your-cosmos-db-key",
     "DatabaseName": "SecondDiary",
-    "DiaryEntriesContainerName": "DiaryEntries"
-    "SystemPromptsContainerName": "DiaryEntries"
+    "DiaryEntriesContainerName": "DiaryEntries",
+    "SystemPromptsContainerName": "SystemPrompts",
+    "EmailSettingsContainerName": "EmailSettings"
   },
   "Encryption": {
     "Key": "your-32-byte-encryption-key-here"
+  },
+  "CommunicationService": {
+    "ConnectionString": "your-communication-service-connection-string",
+    "SenderEmail": "no-reply@yourdomain.com",
+    "SenderName": "Second Diary"
   }
 }

@@ -37,6 +37,13 @@ namespace SecondDiary
             services.Configure<OpenAISettings>(Configuration.GetSection("AzureOpenAI"));
             services.AddSingleton<IOpenAIService, OpenAIService>();
 
+            // Configure Azure Communication Service
+            services.Configure<CommunicationServiceSettings>(Configuration.GetSection("CommunicationService"));
+            services.AddSingleton<IEmailService, EmailService>();
+            
+            // Configure the background email service
+            services.AddHostedService<BackgroundEmailService>();
+
             // Configure Encryption Service
             services.AddSingleton<IEncryptionService, EncryptionService>();
 

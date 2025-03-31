@@ -75,6 +75,11 @@ Second Diary is a modern web application that allows users to:
        "Endpoint": "https://your-resource-name.openai.azure.com/",
        "ApiKey": "your-api-key",
        "DeploymentName": "your-deployment-name"
+     },
+     "CommunicationService": {
+       "ConnectionString": "your-communication-service-connection-string",
+       "SenderEmail": "your-verified-sender@domain.com",
+       "SenderName": "Second Diary"
      }
    }
    ```
@@ -145,6 +150,33 @@ The application uses Azure OpenAI to provide personalized recommendations based 
      "Endpoint": "https://your-resource-name.openai.azure.com/",
      "ApiKey": "your-api-key",
      "DeploymentName": "your-deployment-name"
+   }
+   ```
+
+### Azure Communication Service Setup
+
+Second Diary uses Azure Communication Service to send daily email recommendations based on diary entries. To set up:
+
+1. Create an Azure Communication Service resource:
+   - In the Azure portal, search for "Communication Services"
+   - Click "Create" and complete the required information
+   - Once created, navigate to your resource
+
+2. Configure Email Communication Service:
+   - In your Communication Service resource, go to "Email communications" in the left menu
+   - Follow the instructions to connect a domain or use Azure managed domains
+   - Create and verify your sender email address
+
+3. Get your connection string:
+   - Navigate to "Keys" in the left menu
+   - Copy the connection string for use in your application
+
+4. Update your `appsettings.json` with the Communication Service settings:
+   ```json
+   "CommunicationService": {
+     "ConnectionString": "your-communication-service-connection-string",
+     "SenderEmail": "your-verified-sender@domain.com",
+     "SenderName": "Second Diary"
    }
    ```
 

@@ -3,6 +3,7 @@ import { AuthenticatedTemplate, UnauthenticatedTemplate, useMsal } from '@azure/
 import { AccountInfo, InteractionRequiredAuthError } from '@azure/msal-browser';
 import { ProfileContent } from './components/ProfileContent';
 import { SystemPromptEditor } from './components/SystemPromptEditor';
+import { EmailSettings } from './components/EmailSettings';
 import { loginRequest } from './authConfig';
 import './index.less';
 
@@ -16,6 +17,8 @@ const App: React.FC = () => {
   const [token, setToken] = useState<string | null>(null);
   const [tokenLoading, setTokenLoading] = useState<boolean>(false);
   const [showSystemPrompt, setShowSystemPrompt] = useState<boolean>(false);
+  const [showEmailSettings, setShowEmailSettings] = useState<boolean>(false);
+  const [userEmail, setUserEmail] = useState<string>('');
 
   // Get active account
   const activeAccount: AccountInfo | null = accounts.length > 0 ? accounts[0] : null;
@@ -82,8 +85,24 @@ const App: React.FC = () => {
       if (isAuthenticated) {
         const token: string | null = await acquireToken();
         setToken(token);
+        
+        // Extract email from token
+        if (token) {
+          try {
+            // JWT tokens are in the format: header.payload.signature
+            const payload = token.split('.')[1];
+            // Decode the base64 encoded payload
+            const decodedPayload = JSON.parse(atob(payload));
+            // Get the email claim - could be in different fields depending on the token
+            const email = decodedPayload.email || decodedPayload.preferred_username || '';
+            setUserEmail(email);
+          } catch (error) {
+            console.error('Error extracting email from token:', error);
+          }
+        }
       } else {
         setToken(null);
+        setUserEmail('');
       }
     };
     
@@ -93,6 +112,11 @@ const App: React.FC = () => {
   // Toggle system prompt visibility
   const toggleSystemPrompt = (): void => {
     setShowSystemPrompt(prev => !prev);
+  };
+
+  // Toggle email settings visibility
+  const toggleEmailSettings = (): void => {
+    setShowEmailSettings(prev => !prev);
   };
 
   // SignInButton functionality
@@ -244,6 +268,17 @@ const App: React.FC = () => {
           ) : (
             <p>Token is missing. Please try signing in again.</p>
           )}
+          
+          <div className="email-settings-section">
+            <button 
+              onClick={toggleEmailSettings}
+              className="btn btn-outline-secondary mb-3 w-100"
+            >
+              {showEmailSettings ? 'Hide Email Settings' : 'Show Email Settings'}
+            </button>
+            
+            {showEmailSettings && token && <EmailSettings token={token} userEmail={userEmail} />}
+          </div>
           
           <div className="diary-entry-form">
             <h2>Create New Entry</h2>

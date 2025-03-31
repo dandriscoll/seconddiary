@@ -10,6 +10,7 @@ namespace SecondDiary.Services
         private readonly CosmosClient _cosmosClient;
         private readonly Container _diaryContainer;
         private readonly Container _promptContainer;
+        private readonly Container _emailSettingsContainer;
         private readonly IEncryptionService _encryptionService;
         private readonly ILogger<CosmosDbService> _logger;
 
@@ -22,6 +23,7 @@ namespace SecondDiary.Services
             _cosmosClient = new CosmosClient(settings.Endpoint, settings.Key);
             _diaryContainer = _cosmosClient.GetContainer(settings.DatabaseName, settings.DiaryEntriesContainerName);
             _promptContainer = _cosmosClient.GetContainer(settings.DatabaseName, settings.SystemPromptsContainerName);
+            _emailSettingsContainer = _cosmosClient.GetContainer(settings.DatabaseName, settings.EmailSettingsContainerName);
             _encryptionService = encryptionService;
             _logger = logger;
         }
@@ -41,6 +43,9 @@ namespace SecondDiary.Services
 
                 await database.CreateContainerIfNotExistsAsync(_promptContainer.Id, "/userId");
                 _logger.LogInformation($"Container {_promptContainer.Id} initialized");
+
+                await database.CreateContainerIfNotExistsAsync(_emailSettingsContainer.Id, "/userId");
+                _logger.LogInformation($"Container {_emailSettingsContainer.Id} initialized");
 
                 _logger.LogInformation("Cosmos DB initialization completed successfully");
             }
@@ -187,5 +192,79 @@ namespace SecondDiary.Services
         {
             await _promptContainer.DeleteItemAsync<SystemPrompt>(id, new PartitionKey(userId));
         }
+
+        #region EmailSettings
+
+        public async Task<EmailSettings> CreateEmailSettingsAsync(EmailSettings settings)
+        {
+            ItemResponse<EmailSettings> response = await _emailSettingsContainer.CreateItemAsync(settings, new PartitionKey(settings.UserId));
+            return response.Resource;
+        }
+
+        public async Task<EmailSettings?> GetEmailSettingsAsync(string userId)
+        {
+            try
+            {
+                // Use a query to find the email settings for the user - we're using userId as the id
+                QueryDefinition query = new QueryDefinition("SELECT * FROM c WHERE c.userId = @userId")
+                    .WithParameter("@userId", userId);
+
+                FeedIterator<EmailSettings> iterator = _emailSettingsContainer.GetItemQueryIterator<EmailSettings>(query);
+                
+                while (iterator.HasMoreResults)
+                {
+                    FeedResponse<EmailSettings> response = await iterator.ReadNextAsync();
+                    return response.FirstOrDefault();
+                }
+
+                return null;
+            }
+            catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return null;
+            }
+        }
+
+        public async Task<IEnumerable<EmailSettings>> GetAllEmailSettingsAsync()
+        {
+            List<EmailSettings> allSettings = new List<EmailSettings>();
+            
+            try
+            {
+                QueryDefinition query = new QueryDefinition("SELECT * FROM c");
+                FeedIterator<EmailSettings> iterator = _emailSettingsContainer.GetItemQueryIterator<EmailSettings>(query);
+                
+                while (iterator.HasMoreResults)
+                {
+                    FeedResponse<EmailSettings> response = await iterator.ReadNextAsync();
+                    allSettings.AddRange(response);
+                }
+
+                return allSettings;
+            }
+            catch (CosmosException ex)
+            {
+                _logger.LogError(ex, "Error retrieving all email settings");
+                return allSettings;
+            }
+        }
+
+        public async Task<EmailSettings> UpdateEmailSettingsAsync(EmailSettings settings)
+        {
+            ItemResponse<EmailSettings> response = await _emailSettingsContainer.UpsertItemAsync(settings, new PartitionKey(settings.UserId));
+            return response.Resource;
+        }
+
+        public async Task DeleteEmailSettingsAsync(string userId)
+        {
+            // First get the settings to get the ID
+            EmailSettings? settings = await GetEmailSettingsAsync(userId);
+            if (settings != null)
+            {
+                await _emailSettingsContainer.DeleteItemAsync<EmailSettings>(settings.Id, new PartitionKey(userId));
+            }
+        }
+
+        #endregion
     }
 }
