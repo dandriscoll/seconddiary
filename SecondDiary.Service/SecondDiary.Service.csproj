@@ -52,4 +52,8 @@
     <Copy SourceFiles="@(WwwrootFiles)" DestinationFolder="$(OutputPath)wwwroot\%(RecursiveDir)" />
   </Target>
 
+  <Target Name="CopyWwwrootToPublish" AfterTargets="Publish">
+    <Copy SourceFiles="@(WwwrootFiles)" DestinationFolder="$(PublishDir)wwwroot\%(RecursiveDir)" />
+  </Target>
+
 </Project>
