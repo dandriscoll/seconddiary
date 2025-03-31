@@ -134,7 +134,7 @@ namespace SecondDiary.Controllers
                 if (emailSettings == null)
                     return NotFound("No email settings found. Please configure your email settings first.");
 
-                await _emailService.SendRecommendationEmailAsync(userId, emailSettings.Email, "This is a test email from Second Diary.");
+                await _emailService.SendTestEmailAsync(emailSettings.Email);
                 return Ok("Test email sent successfully!");
             }
             catch (Exception ex)

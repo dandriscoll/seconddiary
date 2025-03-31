@@ -289,7 +289,6 @@ namespace SecondDiary.Tests.Services
                 _mockOptions.Object,
                 _mockLogger.Object,
                 _mockCosmosDbService.Object,
-                _mockDiaryService.Object,
                 _mockOpenAIService.Object);
 
             // Use reflection to replace the EmailClient with our mock
