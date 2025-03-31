@@ -212,8 +212,22 @@ namespace SecondDiary.Services
 
         public async Task<EmailSettings> CreateEmailSettingsAsync(EmailSettings settings)
         {
-            ItemResponse<EmailSettings> response = await _emailSettingsContainer.CreateItemAsync(settings, new PartitionKey(settings.UserId));
-            return response.Resource;
+            // Create a new settings object with encrypted email
+            EmailSettings settingsToSave = new EmailSettings
+            {
+                Id = settings.Id,
+                UserId = settings.UserId,
+                Email = _encryptionService.Encrypt(settings.Email),
+                PreferredTime = settings.PreferredTime,
+                IsEnabled = settings.IsEnabled,
+                LastEmailSent = settings.LastEmailSent,
+                TimeZone = settings.TimeZone
+            };
+
+            ItemResponse<EmailSettings> response = await _emailSettingsContainer.CreateItemAsync(settingsToSave, new PartitionKey(settings.UserId));
+            
+            // Return the original settings with unencrypted email
+            return settings;
         }
 
         public async Task<EmailSettings?> GetEmailSettingsAsync(string userId)
@@ -229,7 +243,13 @@ namespace SecondDiary.Services
                 while (iterator.HasMoreResults)
                 {
                     FeedResponse<EmailSettings> response = await iterator.ReadNextAsync();
-                    return response.FirstOrDefault();
+                    var settings = response.FirstOrDefault();
+                    if (settings != null)
+                    {
+                        // Decrypt the email
+                        settings.Email = _encryptionService.Decrypt(settings.Email);
+                    }
+                    return settings;
                 }
 
                 return null;
@@ -252,7 +272,12 @@ namespace SecondDiary.Services
                 while (iterator.HasMoreResults)
                 {
                     FeedResponse<EmailSettings> response = await iterator.ReadNextAsync();
-                    allSettings.AddRange(response);
+                    foreach (var settings in response)
+                    {
+                        // Decrypt the email
+                        settings.Email = _encryptionService.Decrypt(settings.Email);
+                        allSettings.Add(settings);
+                    }
                 }
 
                 return allSettings;
@@ -266,8 +291,22 @@ namespace SecondDiary.Services
 
         public async Task<EmailSettings> UpdateEmailSettingsAsync(EmailSettings settings)
         {
-            ItemResponse<EmailSettings> response = await _emailSettingsContainer.UpsertItemAsync(settings, new PartitionKey(settings.UserId));
-            return response.Resource;
+            // Create a new settings object with encrypted email
+            EmailSettings settingsToSave = new EmailSettings
+            {
+                Id = settings.Id,
+                UserId = settings.UserId,
+                Email = _encryptionService.Encrypt(settings.Email),
+                PreferredTime = settings.PreferredTime,
+                IsEnabled = settings.IsEnabled,
+                LastEmailSent = settings.LastEmailSent,
+                TimeZone = settings.TimeZone
+            };
+
+            ItemResponse<EmailSettings> response = await _emailSettingsContainer.UpsertItemAsync(settingsToSave, new PartitionKey(settings.UserId));
+            
+            // Return the original settings with unencrypted email
+            return settings;
         }
 
         public async Task DeleteEmailSettingsAsync(string userId)
