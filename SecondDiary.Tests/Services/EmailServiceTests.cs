@@ -126,6 +126,10 @@ namespace SecondDiary.Tests.Services
             _mockCosmosDbService
                 .Setup(s => s.GetEmailSettingsAsync(_testUserId))
                 .ReturnsAsync(emailSettings);
+            
+            _mockCosmosDbService
+                .Setup(s => s.GetAllEmailSettingsAsync())
+                .ReturnsAsync([ emailSettings ]);
 
             _mockOpenAIService
                 .Setup(s => s.GetRecommendationsAsync(_testUserId))

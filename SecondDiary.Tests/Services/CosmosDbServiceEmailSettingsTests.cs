@@ -313,14 +313,11 @@ namespace SecondDiary.Tests.Services
             var service = new CosmosDbService(
                 _mockOptions.Object,
                 _mockEncryptionService.Object,
-                _mockLogger.Object);
+                _mockLogger.Object,
+                _mockCosmosClient.Object);
 
             // Use reflection to set the private fields
             var type = typeof(CosmosDbService);
-            
-            // Set _cosmosClient
-            var cosmosClientField = type.GetField("_cosmosClient", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            cosmosClientField?.SetValue(service, _mockCosmosClient.Object);
             
             // Set _emailSettingsContainer
             var containerField = type.GetField("_emailSettingsContainer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);

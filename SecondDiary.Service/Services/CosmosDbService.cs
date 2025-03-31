@@ -28,6 +28,21 @@ namespace SecondDiary.Services
             _logger = logger;
         }
 
+        public CosmosDbService(
+            IOptions<CosmosDbSettings> cosmosDbSettings,
+            IEncryptionService encryptionService,
+            ILogger<CosmosDbService> logger,
+            CosmosClient cosmosClient)
+        {
+            CosmosDbSettings settings = cosmosDbSettings.Value;
+            _cosmosClient = cosmosClient;
+            _diaryContainer = _cosmosClient.GetContainer(settings.DatabaseName, settings.DiaryEntriesContainerName);
+            _promptContainer = _cosmosClient.GetContainer(settings.DatabaseName, settings.SystemPromptsContainerName);
+            _emailSettingsContainer = _cosmosClient.GetContainer(settings.DatabaseName, settings.EmailSettingsContainerName);
+            _encryptionService = encryptionService;
+            _logger = logger;
+        }
+
         public async Task InitializeAsync()
         {
             _logger.LogInformation("Initializing Cosmos DB databases and containers");
