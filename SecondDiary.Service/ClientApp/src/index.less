@@ -198,3 +198,133 @@ body {
     cursor: not-allowed;
   }
 }
+
+// Markdown content styling
+.markdown-content {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
+
+  h1, h2, h3, h4, h5, h6 {
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+    font-weight: 600;
+    color: #2c3e50;
+  }
+
+  p {
+    margin-bottom: 1em;
+  }
+
+  a {
+    color: #4a6da7;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  ul, ol {
+    margin-bottom: 1em;
+    padding-left: 2em;
+  }
+
+  blockquote {
+    border-left: 4px solid #ddd;
+    padding-left: 1em;
+    margin-left: 0;
+    color: #666;
+  }
+
+  code {
+    background-color: #f8f8f8;
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    font-family: monospace;
+  }
+
+  pre {
+    background-color: #f8f8f8;
+    padding: 1em;
+    border-radius: 3px;
+    overflow-x: auto;
+  }
+}
+
+// Theme-specific markdown styling
+.light-theme {
+  .markdown-content {
+    color: #333;
+    
+    blockquote {
+      background-color: rgba(0, 0, 0, 0.03);
+    }
+  }
+}
+
+.dark-theme {
+  .markdown-content {
+    color: #eee;
+    
+    h1, h2, h3, h4, h5, h6 {
+      color: #e8e8e8;
+    }
+    
+    a {
+      color: #6d93d0;
+    }
+    
+    blockquote {
+      background-color: rgba(255, 255, 255, 0.05);
+      border-left-color: #555;
+      color: #bbb;
+    }
+    
+    code, pre {
+      background-color: #2d2d2d;
+      color: #e8e8e8;
+    }
+  }
+}
+
+// Recommendation container styling
+.markdown-content {
+  margin-top: 20px;
+  padding: 15px;
+  border-radius: 8px;
+  
+  .light-theme & {
+    background-color: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+  
+  .dark-theme & {
+    background-color: #2a2a2a;
+    border: 1px solid #3a3a3a;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+  
+  h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 18px;
+    
+    .dark-theme & {
+      color: #e8e8e8;
+    }
+  }
+  
+  .recommendation-content {
+    padding: 10px;
+    border-radius: 5px;
+    
+    .light-theme & {
+      background-color: #ffffff;
+    }
+    
+    .dark-theme & {
+      background-color: #333333;
+    }
+  }
+}

@@ -2,6 +2,8 @@ using Azure;
 using Azure.Communication.Email;
 using Microsoft.Extensions.Options;
 using SecondDiary.Models;
+using Markdig;
+using System.Text.RegularExpressions;
 
 namespace SecondDiary.Services
 {
@@ -29,6 +31,12 @@ namespace SecondDiary.Services
         private (string htmlContent, string plainTextContent) CreateEmailContent(string header, string intro, string messageContent, string outro)
         {
             string subject = $"{header} from Second Diary";
+            
+            // Convert markdown content to HTML
+            string processedHtmlContent = Markdown.ToHtml(messageContent);
+            
+            // Convert markdown to plain text
+            string processedPlainTextContent = ConvertMarkdownToPlainText(messageContent);
             
             string htmlContent = $@"
             <!DOCTYPE html>
@@ -85,9 +93,9 @@ namespace SecondDiary.Services
                 <div class='content'>
                     <p>Hello,</p>
                     <p>{intro}</p>
-                    <blockquote>
-                        {messageContent}
-                    </blockquote>
+                    <div class='markdown-content'>
+                        {processedHtmlContent}
+                    </div>
                     <p>{outro}</p>
                     <p>
                         <a href='#YOUR_APP_URL#' class='button'>Visit Second Diary</a>
@@ -107,7 +115,7 @@ namespace SecondDiary.Services
 
             {intro}
 
-            {messageContent}
+            {processedPlainTextContent}
 
             {outro}
 
@@ -119,7 +127,71 @@ namespace SecondDiary.Services
 
             return (htmlContent, plainTextContent);
         }
-
+        
+        /// <summary>
+        /// Converts Markdown to plain text, preserving structure but removing formatting
+        /// </summary>
+        private string ConvertMarkdownToPlainText(string markdown)
+        {
+            if (string.IsNullOrEmpty(markdown))
+                return string.Empty;
+                
+            // Headers: Convert # Header to HEADER
+            string result = Regex.Replace(markdown, @"^#{1,6}\s+(.+)$", match => 
+            {
+                string headerText = match.Groups[1].Value.Trim();
+                return headerText.ToUpper() + "\n";
+            }, RegexOptions.Multiline);
+            
+            // Bold: Convert **bold** or __bold__ to *bold*
+            result = Regex.Replace(result, @"\*\*(.+?)\*\*|__(.+?)__", match => 
+            {
+                string text = match.Groups[1].Value;
+                if (string.IsNullOrEmpty(text))
+                    text = match.Groups[2].Value;
+                return "*" + text + "*";
+            });
+            
+            // Italic: Convert *italic* or _italic_ to _italic_
+            result = Regex.Replace(result, @"\*(.+?)\*|_(.+?)_", match => 
+            {
+                string text = match.Groups[1].Value;
+                if (string.IsNullOrEmpty(text))
+                    text = match.Groups[2].Value;
+                return "_" + text + "_";
+            });
+            
+            // Lists: Convert - item to * item
+            result = Regex.Replace(result, @"^[\*\-\+]\s+(.+)$", "* $1", RegexOptions.Multiline);
+            
+            // Numbered lists: Preserve as is
+            result = Regex.Replace(result, @"^\d+\.\s+(.+)$", match => match.Value, RegexOptions.Multiline);
+            
+            // Links: Convert [text](url) to text (url)
+            result = Regex.Replace(result, @"\[(.+?)\]\((.+?)\)", "$1 ($2)");
+            
+            // Images: Convert ![alt](url) to [IMAGE: alt]
+            result = Regex.Replace(result, @"!\[(.+?)\]\((.+?)\)", "[IMAGE: $1]");
+            
+            // Blockquotes: Convert > quote to | quote
+            result = Regex.Replace(result, @"^>\s+(.+)$", "| $1", RegexOptions.Multiline);
+            
+            // Code blocks: Replace with simple TEXT BLOCK
+            result = Regex.Replace(result, @"```[\s\S]*?```", match => 
+            {
+                string codeContent = match.Value.Replace("```", "").Trim();
+                return "CODE BLOCK:\n" + codeContent + "\nEND CODE BLOCK\n";
+            });
+            
+            // Inline code: Replace `code` with "code"
+            result = Regex.Replace(result, @"`(.+?)`", "\"$1\"");
+            
+            // Handle horizontal rules
+            result = Regex.Replace(result, @"^[\*\-_]{3,}$", "---------------------", RegexOptions.Multiline);
+            
+            return result;
+        }
+        
         public async Task SendRecommendationEmailAsync(string userId, string emailAddress, string recommendation)
         {
             try

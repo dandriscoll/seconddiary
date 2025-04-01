@@ -4,6 +4,7 @@ import { AccountInfo, InteractionRequiredAuthError } from '@azure/msal-browser';
 import { ProfileContent } from './components/ProfileContent';
 import { SystemPromptEditor } from './components/SystemPromptEditor';
 import { EmailSettings } from './components/EmailSettings';
+import { MarkdownContent } from './components/MarkdownContent';
 import { loginRequest } from './authConfig';
 import './index.less';
 
@@ -361,7 +362,7 @@ const App: React.FC = () => {
                   <div className="recommendation-container">
                     <h3>Your Recommendation</h3>
                     <div className="recommendation-content">
-                      <p>{recommendationData}</p>
+                      <MarkdownContent content={recommendationData} />
                     </div>
                   </div>
                 )}
