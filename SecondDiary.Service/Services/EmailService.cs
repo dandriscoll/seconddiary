@@ -127,7 +127,7 @@ namespace SecondDiary.Services
                 string subject = "Your Daily Second Diary Recommendation";
                 string intro = "Based on your recent diary entries, here's a personalized recommendation for you:";
                 string outro = "We hope you find this recommendation helpful and insightful.";
-                var (htmlContent, plainTextContent) = CreateEmailContent("Your Daily Recommendation", intro, recommendation, outro);
+                (string htmlContent, string plainTextContent) = CreateEmailContent("Your Daily Recommendation", intro, recommendation, outro);
 
                 EmailContent emailContent = new EmailContent(subject)
                 {
@@ -149,7 +149,7 @@ namespace SecondDiary.Services
                         emailMessage);
 
                     // Update the last email sent timestamp
-                    var emailSettings = await _cosmosDbService.GetEmailSettingsAsync(userId);
+                    EmailSettings emailSettings = await _cosmosDbService.GetEmailSettingsAsync(userId);
                     if (emailSettings != null)
                     {
                         emailSettings.LastEmailSent = DateTime.UtcNow;
@@ -177,7 +177,7 @@ namespace SecondDiary.Services
             {
                 string subject = "Test Email from Second Diary";
                 string message = "This is a test email to confirm your email settings are working correctly.";
-                var (htmlContent, plainTextContent) = CreateEmailContent("Test Email", string.Empty, message, string.Empty);
+                (string htmlContent, string plainTextContent) = CreateEmailContent("Test Email", string.Empty, message, string.Empty);
 
                 EmailContent emailContent = new EmailContent(subject)
                 {
@@ -205,10 +205,8 @@ namespace SecondDiary.Services
             }
         }
 
-        // ...existing code...
         public async Task<bool> CheckAndSendScheduledEmailsAsync()
         {
-            // ...existing code (unchanged)...
             try
             {
                 _logger.LogInformation("Starting scheduled email check");
@@ -222,7 +220,7 @@ namespace SecondDiary.Services
                 IEnumerable<EmailSettings> allEmailSettings = await _cosmosDbService.GetAllEmailSettingsAsync();
                 
                 // Process each user's email settings
-                foreach (var emailSettings in allEmailSettings)
+                foreach (EmailSettings emailSettings in allEmailSettings)
                 {
                     // Skip if email settings are not enabled
                     if (!emailSettings.IsEnabled)
@@ -263,8 +261,8 @@ namespace SecondDiary.Services
                         // Check if we've already sent an email today (using user's local date)
                         if (emailSettings.LastEmailSent.HasValue)
                         {
-                            var lastSentUtc = emailSettings.LastEmailSent.Value;
-                            var lastSentUserTime = TimeZoneInfo.ConvertTimeFromUtc(lastSentUtc, userTimeZone);
+                            DateTime lastSentUtc = emailSettings.LastEmailSent.Value;
+                            DateTime lastSentUserTime = TimeZoneInfo.ConvertTimeFromUtc(lastSentUtc, userTimeZone);
                             
                             if (lastSentUserTime.Date == currentTimeInUserTimeZone.Date)
                                 continue;

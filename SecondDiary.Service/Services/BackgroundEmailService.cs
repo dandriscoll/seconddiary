@@ -1,10 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace SecondDiary.Services
 {
     public class BackgroundEmailService : BackgroundService
@@ -30,15 +23,13 @@ namespace SecondDiary.Services
             {
                 try
                 {
-                    using (var scope = _serviceProvider.CreateScope())
+                    using (IServiceScope scope = _serviceProvider.CreateScope())
                     {
-                        var emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
+                        IEmailService emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
                         bool emailsSent = await emailService.CheckAndSendScheduledEmailsAsync();
 
                         if (emailsSent)
-                        {
                             _logger.LogInformation("Successfully sent scheduled emails at: {time}", DateTimeOffset.Now);
-                        }
                     }
                 }
                 catch (Exception ex)
