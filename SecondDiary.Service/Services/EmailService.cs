@@ -221,7 +221,7 @@ namespace SecondDiary.Services
                         emailMessage);
 
                     // Update the last email sent timestamp
-                    EmailSettings emailSettings = await _cosmosDbService.GetEmailSettingsAsync(userId);
+                    EmailSettings? emailSettings = await _cosmosDbService.GetEmailSettingsAsync(userId);
                     if (emailSettings != null)
                     {
                         emailSettings.LastEmailSent = DateTime.UtcNow;
