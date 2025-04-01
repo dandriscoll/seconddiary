@@ -2,14 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useMsal } from '@azure/msal-react';
 import { graphConfig, loginRequest } from '../authConfig';
 
-export const ProfileContent = () => {
+export const ProfileContent: React.FC = () => {
   const { instance, accounts } = useMsal();
-  const [graphData, setGraphData] = useState(null);
 
   const name = accounts[0] && accounts[0].name;
 
   useEffect(() => {
-    if (accounts[0]) {
+    if (accounts[0])
       // Get an access token for Microsoft Graph
       instance.acquireTokenSilent({
         ...loginRequest,
@@ -21,17 +20,15 @@ export const ProfileContent = () => {
         // Handle error
         console.log(error);
       });
-    }
   }, [accounts, instance]);
 
-  const callMsGraph = (accessToken) => {
+  const callMsGraph = (accessToken: string): void => {
     fetch(graphConfig.graphMeEndpoint, {
       headers: {
         Authorization: `Bearer ${accessToken}`
       }
     })
     .then(response => response.json())
-    .then(data => setGraphData(data))
     .catch(error => console.log(error));
   };
 
