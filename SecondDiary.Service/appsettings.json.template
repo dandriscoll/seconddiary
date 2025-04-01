@@ -34,5 +34,6 @@
     "ConnectionString": "your-communication-service-connection-string",
     "SenderEmail": "no-reply@yourdomain.com",
     "SenderName": "Second Diary"
-  }
+  },
+  "BaseUrl": "https://<hostname>"
 }

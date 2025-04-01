@@ -162,6 +162,9 @@ namespace SecondDiary
                 // Add this only if you're building a SPA
                 endpoints.MapFallbackToFile("index.html");
             });
+
+            string? baseUrl = Configuration["BaseUrl"];
+            Controllers.StayCoolController.Go(baseUrl, logger);
         }
     }
 }
