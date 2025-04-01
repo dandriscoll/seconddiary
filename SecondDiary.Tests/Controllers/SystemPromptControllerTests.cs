@@ -23,6 +23,7 @@ namespace SecondDiary.Tests.Controllers
             
             // Set up user context
             _mockUserContext.Setup(u => u.UserId).Returns(_testUserId);
+            _mockUserContext.Setup(u => u.RequireUserId()).Returns(_testUserId);
             
             _controller = new SystemPromptController(
                 _mockSystemPromptService.Object, 

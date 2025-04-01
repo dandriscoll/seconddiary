@@ -19,19 +19,6 @@ namespace SecondDiary.Controllers
         private readonly IWebHostEnvironment _environment = environment ?? throw new ArgumentNullException(nameof(environment));
         private readonly IUserContext _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext));
 
-        private string GetUserId()
-        {
-            if (_environment.IsDevelopment())
-                return "development-user";
-
-            // Use the UserContext to get the user ID instead of extracting it manually
-            string? userId = _userContext.UserId;
-            if (string.IsNullOrEmpty(userId))
-                throw new UnauthorizedAccessException("User not authenticated");
-            
-            return userId;
-        }
-
         [HttpPost]
         public async Task<ActionResult<DiaryEntry>> CreateEntry([FromBody] DiaryEntryRequest? request)
         {
@@ -50,7 +37,7 @@ namespace SecondDiary.Controllers
 
             DiaryEntry entry = new DiaryEntry
             {
-                UserId = GetUserId(),
+                UserId = _userContext.RequireUserId(),
                 Date = entryDate,
                 Thought = request.Thought,
                 Context = request.Context
@@ -66,7 +53,7 @@ namespace SecondDiary.Controllers
             if (string.IsNullOrEmpty(id))
                 return BadRequest("Entry ID cannot be empty");
 
-            DiaryEntry? entry = await _diaryService.GetEntryAsync(id, GetUserId());
+            DiaryEntry? entry = await _diaryService.GetEntryAsync(id, _userContext.RequireUserId());
             if (entry == null)
                 return NotFound();
 
@@ -76,7 +63,7 @@ namespace SecondDiary.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<DiaryEntry>>> GetEntries()
         {
-            IEnumerable<DiaryEntry> entries = await _diaryService.GetEntriesAsync(GetUserId());
+            IEnumerable<DiaryEntry> entries = await _diaryService.GetEntriesAsync(_userContext.RequireUserId());
             return Ok(entries);
         }
 
@@ -92,7 +79,7 @@ namespace SecondDiary.Controllers
             if (string.IsNullOrEmpty(request.Thought))
                 return BadRequest("Thought cannot be empty");
 
-            DiaryEntry? existingEntry = await _diaryService.GetEntryAsync(id, GetUserId());
+            DiaryEntry? existingEntry = await _diaryService.GetEntryAsync(id, _userContext.RequireUserId());
             if (existingEntry == null)
                 return NotFound();
 
@@ -108,18 +95,18 @@ namespace SecondDiary.Controllers
             if (string.IsNullOrEmpty(id))
                 return BadRequest("Entry ID cannot be empty");
 
-            DiaryEntry? entry = await _diaryService.GetEntryAsync(id, GetUserId());
+            DiaryEntry? entry = await _diaryService.GetEntryAsync(id, _userContext.RequireUserId());
             if (entry == null)
                 return NotFound();
 
-            await _diaryService.DeleteEntryAsync(id, GetUserId());
+            await _diaryService.DeleteEntryAsync(id, _userContext.RequireUserId());
             return NoContent();
         }
 
         [HttpGet("recommendation")]
         public async Task<ActionResult<string>> GetRecommendation()
         {
-            string recommendation = await _openAIService.GetRecommendationAsync(GetUserId());
+            string recommendation = await _openAIService.GetRecommendationAsync(_userContext.RequireUserId());
             return Ok(recommendation);
         }
     }

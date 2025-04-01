@@ -31,12 +31,10 @@ namespace SecondDiary.Controllers
         [HttpGet]
         public async Task<IActionResult> GetEmailSettings()
         {
+            string userId = _userContext.RequireUserId();
+            
             try
             {
-                string? userId = _userContext.UserId;
-                if (string.IsNullOrEmpty(userId))
-                    return Unauthorized("User ID not found in token");
-
                 EmailSettings? emailSettings = await _cosmosDbService.GetEmailSettingsAsync(userId);
                 if (emailSettings == null)
                     return NotFound($"No email settings found for user {userId}");
@@ -53,18 +51,14 @@ namespace SecondDiary.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateOrUpdateEmailSettings([FromBody] EmailSettings settings)
         {
+            string userId = _userContext.RequireUserId();
+
             try
             {
-                string? userId = _userContext.UserId;
-                if (string.IsNullOrEmpty(userId))
-                    return Unauthorized("User ID not found in token");
-
                 // Extract email from claims
                 string userEmail = GetUserEmailFromClaims();
                 if (string.IsNullOrEmpty(userEmail))
-                {
                     return BadRequest("User email not found in token");
-                }
 
                 // Get existing settings or create new
                 EmailSettings? existingSettings = await _cosmosDbService.GetEmailSettingsAsync(userId);
@@ -105,12 +99,10 @@ namespace SecondDiary.Controllers
         [HttpDelete]
         public async Task<IActionResult> DeleteEmailSettings()
         {
+            string userId = _userContext.RequireUserId();
+
             try
             {
-                string? userId = _userContext.UserId;
-                if (string.IsNullOrEmpty(userId))
-                    return Unauthorized("User ID not found in token");
-
                 await _cosmosDbService.DeleteEmailSettingsAsync(userId);
                 return Ok();
             }
@@ -124,12 +116,10 @@ namespace SecondDiary.Controllers
         [HttpPost("sendTestEmail")]
         public async Task<IActionResult> SendTestEmail()
         {
+            string userId = _userContext.RequireUserId();
+
             try
             {
-                string? userId = _userContext.UserId;
-                if (string.IsNullOrEmpty(userId))
-                    return Unauthorized("User ID not found in token");
-
                 EmailSettings? emailSettings = await _cosmosDbService.GetEmailSettingsAsync(userId);
                 if (emailSettings == null)
                     return NotFound("No email settings found. Please configure your email settings first.");

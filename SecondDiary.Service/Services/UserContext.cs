@@ -6,6 +6,7 @@ namespace SecondDiary.Services
     public interface IUserContext
     {
         string? UserId { get; }
+        string RequireUserId();
         bool IsAuthenticated { get; }
     }
 
@@ -28,6 +29,15 @@ namespace SecondDiary.Services
         public string? UserId => IsAuthenticated && HasValidAudience
             ? SanitizeUserId(_encryptionService.Encrypt(_httpContextAccessor.HttpContext?.User.GetObjectId()!))
             : null;
+
+        public string RequireUserId()
+        {
+            string? userId = UserId;
+            if (string.IsNullOrEmpty(userId))
+                throw new UnauthorizedAccessException("User not authenticated or invalid audience");
+
+            return userId;
+        }
 
         public bool IsAuthenticated => (_httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated ?? false) && HasValidAudience;
 

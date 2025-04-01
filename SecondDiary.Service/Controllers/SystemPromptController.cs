@@ -18,22 +18,10 @@ namespace SecondDiary.Controllers
         private readonly IOpenAIService _openAIService = openAIService;
         private readonly IUserContext _userContext = userContext;
 
-        private string GetUserId()
-        {
-            if (_environment.IsDevelopment())
-                return "development-user";
-
-            string? userId = _userContext.UserId;
-            if (string.IsNullOrEmpty(userId))
-                throw new UnauthorizedAccessException("User not authenticated");
-            
-            return userId;
-        }
-
         [HttpGet]
         public async Task<ActionResult<string>> GetSystemPrompt()
         {
-            string userId = GetUserId();
+            string userId = _userContext.RequireUserId();
             string prompt = await _systemPromptService.GetSystemPromptAsync(userId);
             return Ok(prompt);
         }
@@ -48,7 +36,7 @@ namespace SecondDiary.Controllers
             if (string.IsNullOrEmpty(line))
                 return BadRequest("Line cannot be empty");
 
-            string userId = GetUserId();
+            string userId = _userContext.RequireUserId();
             await _systemPromptService.AddLineToPromptAsync(userId, line);
             return Ok();
         }
@@ -59,7 +47,7 @@ namespace SecondDiary.Controllers
             if (string.IsNullOrEmpty(line))
                 return BadRequest("Line text cannot be empty");
 
-            string userId = GetUserId();
+            string userId = _userContext.RequireUserId();
             await _systemPromptService.RemoveLineAsync(userId, line);
             return Ok();
         }
@@ -67,7 +55,7 @@ namespace SecondDiary.Controllers
         [HttpGet("recommendations")]
         public async Task<ActionResult<string>> GetRecommendations()
         {
-            string userId = GetUserId();
+            string userId = _userContext.RequireUserId();
             
             try
             {

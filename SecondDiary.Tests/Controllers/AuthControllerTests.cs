@@ -35,27 +35,33 @@ namespace SecondDiary.Tests.Controllers
         public void GetCurrentUser_ReturnsOk_WhenAuthenticated()
         {
             // Arrange
-            var userContext = new Mock<IUserContext>();
+            string encryptedUserId = "encrypted-test-user-id";
+    
+            Mock<IUserContext> userContext = new Mock<IUserContext>();
             userContext.Setup(x => x.IsAuthenticated).Returns(true);
-            userContext.Setup(x => x.UserId).Returns(TestUserId);
+            userContext.Setup(x => x.UserId).Returns(encryptedUserId);
+            userContext.Setup(x => x.RequireUserId()).Returns(encryptedUserId);
 
-            var configuration = new Mock<IConfiguration>();
-            var controller = new AuthController(configuration.Object, userContext.Object);
+            Mock<IConfiguration> configuration = new Mock<IConfiguration>();
+            AuthController controller = new AuthController(configuration.Object, userContext.Object);
             controller.ControllerContext = CreateControllerContext(isAuthenticated: true);
 
             // Act
-            var result = controller.GetCurrentUser();
+            IActionResult result = controller.GetCurrentUser();
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
             Assert.NotNull(okResult.Value);
             
             // Use JsonElement to safely access dynamic properties
-            var jsonValue = JsonSerializer.Serialize(okResult.Value);
-            var element = JsonSerializer.Deserialize<JsonElement>(jsonValue);
+            string jsonValue = JsonSerializer.Serialize(okResult.Value);
+            JsonElement element = JsonSerializer.Deserialize<JsonElement>(jsonValue);
             
-            Assert.True(element.TryGetProperty("UserId", out var userIdElement));
-            Assert.Equal(TestUserId, userIdElement.GetString());
+            Assert.True(element.TryGetProperty("UserId", out JsonElement userIdElement));
+            Assert.Equal(encryptedUserId, userIdElement.GetString());
+            
+            // Verify RequireUserId was called
+            userContext.Verify(x => x.RequireUserId(), Times.Once);
         }
 
         private ControllerContext CreateControllerContext(bool isAuthenticated)

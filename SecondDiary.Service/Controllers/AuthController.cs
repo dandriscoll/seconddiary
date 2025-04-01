@@ -22,7 +22,7 @@ namespace SecondDiary.Controllers
 
             return Ok(new
             {
-                UserId = _userContext.UserId,
+                UserId = _userContext.RequireUserId(),
                 Name = User.Identity.Name,
                 ObjectId = User.GetObjectId(),
                 Claims = User.Claims.Select(c => new { c.Type, c.Value })

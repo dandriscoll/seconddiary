@@ -34,6 +34,11 @@ namespace SecondDiary.Tests.Controllers
                 .Setup(u => u.UserId)
                 .Returns(_testUserId);
             
+            // Set up RequireUserId to also return the test user ID
+            _mockUserContext
+                .Setup(u => u.RequireUserId())
+                .Returns(_testUserId);
+            
             // Create mock email service
             _mockEmailService = new Mock<IEmailService>();
             
@@ -44,12 +49,12 @@ namespace SecondDiary.Tests.Controllers
                 _mockEmailService.Object);
             
             // Setup ClaimsPrincipal with email claim
-            var claims = new List<Claim>
+            List<Claim> claims = new List<Claim>
             {
                 new Claim("email", _testEmail)
             };
-            var identity = new ClaimsIdentity(claims, "TestAuthType");
-            var claimsPrincipal = new ClaimsPrincipal(identity);
+            ClaimsIdentity identity = new ClaimsIdentity(claims, "TestAuthType");
+            ClaimsPrincipal claimsPrincipal = new ClaimsPrincipal(identity);
             
             // Assign the ClaimsPrincipal to the controller's User property
             _controller.ControllerContext = new ControllerContext
@@ -178,6 +183,8 @@ namespace SecondDiary.Tests.Controllers
             // Arrange
             _mockUserContext.Setup(u => u.UserId)
                 .Returns((string)null!);
+            _mockUserContext.Setup(u => u.RequireUserId())
+                .Throws(new UnauthorizedAccessException("User not authenticated or invalid audience"));
             
             var inputSettings = new EmailSettings
             {
@@ -185,11 +192,9 @@ namespace SecondDiary.Tests.Controllers
                 IsEnabled = true
             };
 
-            // Act
-            var result = await _controller.CreateOrUpdateEmailSettings(inputSettings);
-
-            // Assert
-            Assert.IsType<UnauthorizedObjectResult>(result);
+            // Act & Assert
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(async () => 
+                await _controller.CreateOrUpdateEmailSettings(inputSettings));
         }
 
         [Fact]
@@ -239,13 +244,12 @@ namespace SecondDiary.Tests.Controllers
             // Arrange
             _mockUserContext.Setup(u => u.UserId)
                 .Returns((string)null!);
+            _mockUserContext.Setup(u => u.RequireUserId())
+                .Throws(new UnauthorizedAccessException("User not authenticated or invalid audience"));
 
             // Act
-            var result = await _controller.DeleteEmailSettings();
-
-            // Assert
-            Assert.IsType<UnauthorizedObjectResult>(result);
-            _mockCosmosDbService.Verify(service => service.DeleteEmailSettingsAsync(It.IsAny<string>()), Times.Never);
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(async () => 
+                await _controller.DeleteEmailSettings());
         }
     }
 }
