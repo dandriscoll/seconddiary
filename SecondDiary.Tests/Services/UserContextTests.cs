@@ -15,7 +15,8 @@ namespace SecondDiary.Tests.Services
             // Arrange
             var httpContextAccessor = CreateHttpContextAccessor(isAuthenticated: false);
             var configuration = CreateConfiguration();
-            var userContext = new UserContext(httpContextAccessor.Object, configuration.Object);
+            var encryptionService = CreateEncryptionService();
+            var userContext = new UserContext(httpContextAccessor.Object, configuration.Object, encryptionService.Object);
 
             // Act
             var userId = userContext.UserId;
@@ -32,7 +33,8 @@ namespace SecondDiary.Tests.Services
                 isAuthenticated: true, 
                 audience: "wrong-audience");
             var configuration = CreateConfiguration();
-            var userContext = new UserContext(httpContextAccessor.Object, configuration.Object);
+            var encryptionService = CreateEncryptionService();
+            var userContext = new UserContext(httpContextAccessor.Object, configuration.Object, encryptionService.Object);
 
             // Act
             var userId = userContext.UserId;
@@ -50,13 +52,16 @@ namespace SecondDiary.Tests.Services
                 audience: TestAppId, 
                 objectId: TestObjectId);
             var configuration = CreateConfiguration();
-            var userContext = new UserContext(httpContextAccessor.Object, configuration.Object);
+            var encryptionService = CreateEncryptionService();
+            var userContext = new UserContext(httpContextAccessor.Object, configuration.Object, encryptionService.Object);
 
             // Act
             var userId = userContext.UserId;
 
             // Assert
-            Assert.Equal(TestObjectId, userId);
+            Assert.NotNull(userId);
+            Assert.NotEqual(TestObjectId, userId);
+            Assert.Equal(("ENCRYPTED" + TestObjectId).Replace("-", "").Substring(0, 20), userId);
         }
 
         [Fact]
@@ -65,7 +70,8 @@ namespace SecondDiary.Tests.Services
             // Arrange
             var httpContextAccessor = CreateHttpContextAccessor(isAuthenticated: false);
             var configuration = CreateConfiguration();
-            var userContext = new UserContext(httpContextAccessor.Object, configuration.Object);
+            var encryptionService = CreateEncryptionService();
+            var userContext = new UserContext(httpContextAccessor.Object, configuration.Object, encryptionService.Object);
 
             // Act
             var isAuthenticated = userContext.IsAuthenticated;
@@ -82,7 +88,8 @@ namespace SecondDiary.Tests.Services
                 isAuthenticated: true, 
                 audience: "wrong-audience");
             var configuration = CreateConfiguration();
-            var userContext = new UserContext(httpContextAccessor.Object, configuration.Object);
+            var encryptionService = CreateEncryptionService();
+            var userContext = new UserContext(httpContextAccessor.Object, configuration.Object, encryptionService.Object);
 
             // Act
             var isAuthenticated = userContext.IsAuthenticated;
@@ -99,7 +106,8 @@ namespace SecondDiary.Tests.Services
                 isAuthenticated: true, 
                 audience: TestAppId);
             var configuration = CreateConfiguration();
-            var userContext = new UserContext(httpContextAccessor.Object, configuration.Object);
+            var encryptionService = CreateEncryptionService();
+            var userContext = new UserContext(httpContextAccessor.Object, configuration.Object, encryptionService.Object);
 
             // Act
             var isAuthenticated = userContext.IsAuthenticated;
@@ -114,7 +122,8 @@ namespace SecondDiary.Tests.Services
             // Arrange
             var httpContextAccessor = CreateHttpContextAccessor(isAuthenticated: false);
             var configuration = CreateConfiguration();
-            var userContext = new UserContext(httpContextAccessor.Object, configuration.Object);
+            var encryptionService = CreateEncryptionService();
+            var userContext = new UserContext(httpContextAccessor.Object, configuration.Object, encryptionService.Object);
 
             // Act
             var hasValidAudience = userContext.HasValidAudience;
@@ -131,7 +140,8 @@ namespace SecondDiary.Tests.Services
                 isAuthenticated: true, 
                 audience: "wrong-audience");
             var configuration = CreateConfiguration();
-            var userContext = new UserContext(httpContextAccessor.Object, configuration.Object);
+            var encryptionService = CreateEncryptionService();
+            var userContext = new UserContext(httpContextAccessor.Object, configuration.Object, encryptionService.Object);
 
             // Act
             var hasValidAudience = userContext.HasValidAudience;
@@ -148,7 +158,8 @@ namespace SecondDiary.Tests.Services
                 isAuthenticated: true, 
                 audience: TestAppId);
             var configuration = CreateConfiguration();
-            var userContext = new UserContext(httpContextAccessor.Object, configuration.Object);
+            var encryptionService = CreateEncryptionService();
+            var userContext = new UserContext(httpContextAccessor.Object, configuration.Object, encryptionService.Object);
 
             // Act
             var hasValidAudience = userContext.HasValidAudience;
@@ -198,6 +209,14 @@ namespace SecondDiary.Tests.Services
             configuration.Setup(x => x["AzureAd:ClientId"]).Returns(TestAppId);
 
             return configuration;
+        }
+
+        private Mock<IEncryptionService> CreateEncryptionService()
+        {
+            var encryptionService = new Mock<IEncryptionService>();
+            encryptionService.Setup(x => x.Encrypt(It.IsAny<string>())).Returns((string s) => "ENCRYPTED: " + s);
+            encryptionService.Setup(x => x.Decrypt(It.IsAny<string>())).Returns((string s) => s.Replace("ENCRYPTED: ", ""));
+            return encryptionService;
         }
     }
 }
