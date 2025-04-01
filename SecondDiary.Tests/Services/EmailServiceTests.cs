@@ -132,7 +132,7 @@ namespace SecondDiary.Tests.Services
                 .ReturnsAsync([ emailSettings ]);
 
             _mockOpenAIService
-                .Setup(s => s.GetRecommendationsAsync(_testUserId))
+                .Setup(s => s.GetRecommendationAsync(_testUserId))
                 .ReturnsAsync("Test recommendation");
 
             var service = CreateEmailService();
@@ -195,7 +195,7 @@ namespace SecondDiary.Tests.Services
             
             // Verify the email was NOT sent
             _mockDiaryService.Verify(s => s.GetEntriesAsync(_testUserId), Times.Never);
-            _mockOpenAIService.Verify(s => s.GetRecommendationsAsync(_testUserId), Times.Never);
+            _mockOpenAIService.Verify(s => s.GetRecommendationAsync(_testUserId), Times.Never);
         }
 
         [Fact]
@@ -239,7 +239,7 @@ namespace SecondDiary.Tests.Services
             
             // Verify the email was NOT sent
             _mockDiaryService.Verify(s => s.GetEntriesAsync(_testUserId), Times.Never);
-            _mockOpenAIService.Verify(s => s.GetRecommendationsAsync(_testUserId), Times.Never);
+            _mockOpenAIService.Verify(s => s.GetRecommendationAsync(_testUserId), Times.Never);
         }
 
         [Fact]
@@ -283,7 +283,7 @@ namespace SecondDiary.Tests.Services
             
             // Verify the email was NOT sent
             _mockDiaryService.Verify(s => s.GetEntriesAsync(_testUserId), Times.Never);
-            _mockOpenAIService.Verify(s => s.GetRecommendationsAsync(_testUserId), Times.Never);
+            _mockOpenAIService.Verify(s => s.GetRecommendationAsync(_testUserId), Times.Never);
         }
 
         private EmailService CreateEmailService()

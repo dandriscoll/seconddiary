@@ -71,7 +71,7 @@ namespace SecondDiary.Controllers
             
             try
             {
-                string recommendations = await _openAIService.GetRecommendationsAsync(userId);
+                string recommendations = await _openAIService.GetRecommendationAsync(userId);
                 return Ok(recommendations);
             }
             catch (Exception ex)

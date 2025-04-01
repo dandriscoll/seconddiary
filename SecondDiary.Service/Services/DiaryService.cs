@@ -9,7 +9,6 @@ namespace SecondDiary.Services
         Task<IEnumerable<DiaryEntry>> GetEntriesAsync(string userId);
         Task<DiaryEntry> UpdateEntryAsync(DiaryEntry entry);
         Task DeleteEntryAsync(string id, string userId);
-        Task<string> GetRecommendationAsync(string userId);
     }
 
     public class DiaryService(ICosmosDbService cosmosDbService, IEncryptionService encryptionService) : IDiaryService
@@ -40,19 +39,6 @@ namespace SecondDiary.Services
         public async Task DeleteEntryAsync(string id, string userId)
         {
             await _cosmosDbService.DeleteDiaryEntryAsync(id, userId);
-        }
-
-        public async Task<string> GetRecommendationAsync(string userId)
-        {
-            var entries = await _cosmosDbService.GetDiaryEntriesAsync(userId);
-            if (!entries.Any())
-            {
-                return "Start writing your first diary entry!";
-            }
-
-            // Simple recommendation based on the most recent entry
-            var latestEntry = entries.OrderByDescending(e => e.Date).First();
-            return $"Based on your latest entry from {latestEntry.Date:MMM dd, yyyy}, consider writing about your context: {latestEntry.Context ?? "not specified"}";
         }
     }
 }

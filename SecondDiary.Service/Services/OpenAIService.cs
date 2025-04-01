@@ -9,7 +9,7 @@ namespace SecondDiary.Services
 {
     public interface IOpenAIService
     {
-        Task<string> GetRecommendationsAsync(string userId);
+        Task<string> GetRecommendationAsync(string userId);
     }
 
     public class OpenAIService : IOpenAIService
@@ -38,7 +38,7 @@ namespace SecondDiary.Services
             _systemPromptService = systemPromptService;
         }
 
-        public async Task<string> GetRecommendationsAsync(string userId)
+        public async Task<string> GetRecommendationAsync(string userId)
         {
             // Get user's diary entries
             IEnumerable<DiaryEntry> entries = await _cosmosDbService.GetDiaryEntriesAsync(userId);

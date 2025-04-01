@@ -13,12 +13,14 @@ const App: React.FC = () => {
   const [thought, setThought] = useState<string>('');
   const [context, setContext] = useState<string>('');
   const [isPosting, setIsPosting] = useState<boolean>(false);
+  const [isGettingRecommendation, setIsGettingRecommendation] = useState<boolean>(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [token, setToken] = useState<string | null>(null);
   const [tokenLoading, setTokenLoading] = useState<boolean>(false);
   const [showSystemPrompt, setShowSystemPrompt] = useState<boolean>(false);
   const [showEmailSettings, setShowEmailSettings] = useState<boolean>(false);
   const [userEmail, setUserEmail] = useState<string>('');
+  const [recommendationData, setRecommendationData] = useState<string | null>(null);
 
   // Get active account
   const activeAccount: AccountInfo | null = accounts.length > 0 ? accounts[0] : null;
@@ -224,6 +226,36 @@ const App: React.FC = () => {
         setIsPosting(false);
       }
     };
+
+    const handleGetRecommendation = async (): Promise<void> => {
+      setIsGettingRecommendation(true);
+    
+      try {
+        const currentToken: string | null = await acquireToken();
+        if (!currentToken) throw new Error('Failed to acquire token');
+    
+        const response: Response = await fetch('/api/diary/recommendation', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${currentToken.trim()}`
+          }
+        });
+    
+        if (!response.ok) {
+          const errorData = await response.text();
+          console.error('API error response:', errorData);
+          throw new Error(`API error: ${response.status} ${response.statusText}`);
+        }
+    
+        setRecommendationData(await response.text());
+        // Handle recommendation data as needed (e.g., display to user)
+      } catch (error) {
+        console.error('Error fetching recommendation:', error);
+      } finally {
+        setIsGettingRecommendation(false);
+      }
+    };    
   
   return (
     <div className={`App ${theme}-theme`}>
@@ -310,11 +342,30 @@ const App: React.FC = () => {
               </div>
               <button 
                 type="submit" 
-                disabled={isPosting || !thought.trim()}
+                disabled={isPosting || isGettingRecommendation || !thought.trim()}
                 className="post-button full-width-button"
               >
                 {isPosting ? 'Posting...' : 'Post'}
               </button>
+
+              <button
+                type="button"
+                onClick={handleGetRecommendation}
+                disabled={isPosting || isGettingRecommendation}
+                className="recommendation-button full-width-button"
+              >
+                {isGettingRecommendation ? 'Loading Recommendation...' : 'Get Recommendation'}
+              </button>
+              <div className="recommendation-section">
+                {recommendationData && (
+                  <div className="recommendation-container">
+                    <h3>Your Recommendation</h3>
+                    <div className="recommendation-content">
+                      <p>{recommendationData}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
             </form>
           </div>
         </AuthenticatedTemplate>

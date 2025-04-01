@@ -10,10 +10,12 @@ namespace SecondDiary.Controllers
     [Route("api/[controller]")]
     public class DiaryController(
         IDiaryService diaryService,
+        IOpenAIService openAIService,
         IWebHostEnvironment environment,
         IUserContext userContext) : ControllerBase
     {
         private readonly IDiaryService _diaryService = diaryService ?? throw new ArgumentNullException(nameof(diaryService));
+        private readonly IOpenAIService _openAIService = openAIService ?? throw new ArgumentNullException(nameof(openAIService));
         private readonly IWebHostEnvironment _environment = environment ?? throw new ArgumentNullException(nameof(environment));
         private readonly IUserContext _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext));
 
@@ -117,7 +119,7 @@ namespace SecondDiary.Controllers
         [HttpGet("recommendation")]
         public async Task<ActionResult<string>> GetRecommendation()
         {
-            string recommendation = await _diaryService.GetRecommendationAsync(GetUserId());
+            string recommendation = await _openAIService.GetRecommendationAsync(GetUserId());
             return Ok(recommendation);
         }
     }

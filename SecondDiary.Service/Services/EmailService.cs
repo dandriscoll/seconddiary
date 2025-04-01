@@ -273,7 +273,7 @@ namespace SecondDiary.Services
                         string userId = emailSettings.UserId;
                         
                         // Generate recommendation using OpenAI
-                        string recommendation = await _openAIService.GetRecommendationsAsync(userId);
+                        string recommendation = await _openAIService.GetRecommendationAsync(userId);
                         
                         // Send the email
                         await SendRecommendationEmailAsync(userId, emailSettings.Email, recommendation);
