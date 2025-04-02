@@ -7,6 +7,9 @@ A secure diary application with AI-powered recommendations.
 - Encrypted diary entries
 - User authentication with Azure AD
 - AI-powered recommendations based on diary entries
+- Daily email digests with personalized insights
+- Responsive design for desktop and mobile devices
+- Light and dark theme support
 
 ## Overview
 
@@ -14,75 +17,108 @@ Second Diary is a modern web application that allows users to:
 - Securely log in using Microsoft Identity
 - Create diary entries with thoughts and optional context
 - View and manage personal diary entries
+- Receive AI-generated insights based on journal content
 - Experience a responsive UI that adapts to both desktop and mobile devices
 - Automatically adjust to system light/dark theme preferences
 
 ## Tech Stack
 
-- **Backend**: ASP.NET Core 9.0 API
-- **Frontend**: React with TypeScript
-- **Authentication**: Microsoft Identity / Azure AD
-- **Database**: Azure Cosmos DB
-- **Styling**: LESS CSS preprocessor
+- ASP.NET Core 9.0 API
+- React with TypeScript
+- Azure AD authentication
+- Azure Cosmos DB
+- Azure OpenAI Service
+- Azure Communication Services
+
+## Configuration
+
+Create an `appsettings.Development.json` file based on the template with the following settings:
+
+```json
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AzureAd": {
+    "Instance": "https://login.microsoftonline.com/",
+    "Domain": "your-domain.onmicrosoft.com",
+    "TenantId": "your-tenant-id",
+    "ClientId": "your-client-id",
+    "CallbackPath": "/signin-oidc",
+    "SignedOutCallbackPath": "/signout-callback-oidc"
+  },
+  "CosmosDb": {
+    "EndpointUrl": "your-cosmos-db-url",
+    "PrimaryKey": "your-primary-key",
+    "DatabaseName": "SecondDiary",
+    "ContainerName": "DiaryEntries"
+  },
+  "AzureOpenAI": {
+    "Endpoint": "https://your-resource-name.openai.azure.com/",
+    "ApiKey": "your-api-key",
+    "DeploymentName": "your-deployment-name",
+    "ModelName": "gpt-4",
+    "ApiVersion": "2023-12-01-preview"
+  },
+  "CommunicationService": {
+    "ConnectionString": "your-communication-service-connection-string",
+    "SenderEmail": "donotreply@your-domain.com",
+    "SenderName": "Second Diary Insights"
+  },
+  "FeatureFlags": {
+    "DiaryAnalysis": true,
+    "EmailNotifications": false
+  },
+  "AllowedHosts": "*",
+  "CORS": {
+    "AllowedOrigins": ["https://localhost:3000", "https://yourdomain.com"]
+  }
+}
+```
+
+## API Endpoints
+
+### Authentication
+- `GET /authentication/login` - Initiate login process
+- `GET /authentication/logout` - Logout current user
+
+### Diary Entries
+- `GET /api/diaries` - Get all diary entries for the authenticated user
+- `GET /api/diaries/{id}` - Get a specific diary entry
+- `POST /api/diaries` - Create a new diary entry
+- `PUT /api/diaries/{id}` - Update an existing diary entry
+- `DELETE /api/diaries/{id}` - Delete a diary entry
+
+### Insights
+- `GET /api/insights` - Get AI-generated insights based on recent entries
+- `GET /api/insights/preferences` - Get insight preferences
+- `PUT /api/insights/preferences` - Update insight preferences
+
+### User Profile
+- `GET /api/profile` - Get current user's profile
+- `PUT /api/profile` - Update profile settings
 
 ## Local Development Setup
 
 ### Prerequisites
 
 - [.NET 9.0 SDK](https://dotnet.microsoft.com/download)
-- [Node.js](https://nodejs.org/) (v16 or higher)
-- [npm](https://www.npmjs.com/) (v8 or higher)
-- [Visual Studio Code](https://code.visualstudio.com/)
+- [Node.js](https://nodejs.org/) (v18 or higher)
+- [npm](https://www.npmjs.com/) (v9 or higher)
+- [Visual Studio Code](https://code.visualstudio.com/) or Visual Studio 2022
 
-### Configuration
+### Setting Up Local Environment
 
-1. Clone the repository:
+1. Clone the repository
    ```
    git clone https://github.com/yourusername/seconddiary.git
    cd seconddiary
    ```
 
-2. Set up app configuration:
-   - Create an `appsettings.Development.json` file in the SecondDiary.API directory
-   - Configure the following settings:
-
-   ```json
-   {
-     "Logging": {
-       "LogLevel": {
-         "Default": "Information",
-         "Microsoft.AspNetCore": "Warning"
-       }
-     },
-     "AzureAd": {
-       "Instance": "https://login.microsoftonline.com/",
-       "TenantId": "your-tenant-id",
-       "ClientId": "your-client-id"
-     },
-     "CosmosDb": {
-       "EndpointUrl": "your-cosmos-db-url",
-       "PrimaryKey": "your-primary-key",
-       "DatabaseName": "SecondDiary",
-       "ContainerName": "DiaryEntries"
-     },
-     "Authentication": {
-       "Microsoft": {
-         "ClientId": "your-microsoft-client-id",
-         "ClientSecret": "your-microsoft-client-secret"
-       }
-     },
-     "AzureOpenAI": {
-       "Endpoint": "https://your-resource-name.openai.azure.com/",
-       "ApiKey": "your-api-key",
-       "DeploymentName": "your-deployment-name"
-     },
-     "CommunicationService": {
-       "ConnectionString": "your-communication-service-connection-string",
-       "SenderEmail": "your-verified-sender@domain.com",
-       "SenderName": "Second Diary"
-     }
-   }
-   ```
+2. Configure appsettings.Development.json as shown in the Configuration section
 
 3. Install frontend dependencies:
    ```
@@ -90,199 +126,110 @@ Second Diary is a modern web application that allows users to:
    npm install
    ```
 
-### Azure AD App Registration
+4. Run the application:
+   ```
+   cd SecondDiary.API
+   dotnet run
+   ```
 
-1. **Create an App Registration in Azure**:
+5. The application will be available at `https://localhost:7126`
+
+## Service Setup Instructions
+
+### Azure AD Setup
+
+1. Create an App Registration in Azure:
    - Navigate to the [Azure Portal](https://portal.azure.com)
    - Go to "Azure Active Directory" > "App registrations" > "New registration"
    - Enter a name for your application (e.g., "SecondDiary-Dev")
-   - For "Supported account types", select "Personal Microsoft accounts"
-   - Set the Redirect URI: Select "Single-page application (SPA)" from the platform dropdown
-   - Enter `https://localhost:5001/` as the redirect URI, *changing the port to the one chosen for you by dotnet run
+   - For "Supported account types", select "Accounts in this organizational directory only"
+   - Set the Redirect URI: Select "Single-page application (SPA)" 
+   - Enter `https://localhost:7126/authentication/login-callback` as the redirect URI
    - Click "Register"
 
-2. **Configure Authentication Settings**:
+2. Configure Authentication Settings:
    - In your app registration, go to "Authentication"
-   - Under the "Single-page application" platform, add additional redirect URIs:
-     - `https://localhost:5001/authentication/login-callback`
-     - `https://localhost:5001/silent-refresh.html`
-   - Ensure "Access tokens" and "ID tokens" are selected under the "Implicit grant and hybrid flows" section
+   - Add additional redirect URIs:
+     - `https://localhost:7126/`
+     - `https://localhost:7126/silent-refresh.html`
+   - Ensure "Access tokens" and "ID tokens" are selected
    - Save your changes
 
-3. **Get Application (Client) ID and Tenant ID**:
-   - From the app registration Overview page, copy the "Application (client) ID" and "Directory (tenant) ID"
-   - Add these values to your `appsettings.Development.json` file in the AzureAd section
-
-4. **Create a Client Secret (if needed for server-side API calls)**:
-   - Go to "Certificates & secrets" > "Client secrets" > "New client secret"
-   - Add a description and select an expiration period
-   - Copy the secret value immediately (you won't be able to see it again)
-   - Add this value to your `appsettings.Development.json` file in the Authentication:Microsoft:ClientSecret section
+3. Copy the "Application (client) ID" and "Directory (tenant) ID" to your appsettings.Development.json
 
 ### Azure OpenAI Setup
 
-The application uses Azure OpenAI to provide personalized recommendations based on diary entries. To set up:
-
-1. Create an Azure OpenAI resource in the Azure portal:
+1. Create an Azure OpenAI resource:
    - Navigate to the Azure portal and search for "Azure OpenAI"
    - Click "Create" and complete the required fields
-   - Select appropriate region, pricing tier, and other settings
-   - Click "Review + create" and then "Create"
+   - Select an appropriate region and pricing tier
 
-2. Create a model deployment in Azure AI Studio:
+2. Create a model deployment:
    - Navigate to Azure AI Studio (https://oai.azure.com/)
    - Select your OpenAI resource
-   - Go to "Deployments" in the left navigation
-   - Click "Create new deployment"
+   - Go to "Deployments" and click "Create new deployment"
    - Choose a model (e.g., GPT-4, GPT-3.5-Turbo)
-   - Give your deployment a name (e.g., "diary-recommendations")
+   - Give your deployment a name (e.g., "diary-insights")
    - Configure your model version and other parameters
-   - Click "Create"
 
-3. Get your configuration details:
-   - For the Endpoint: Go to your Azure OpenAI resource in the Azure portal, navigate to "Keys and Endpoint", and copy the Endpoint
-   - For the API Key: Copy either Key1 or Key2 from the same page
-   - For the Deployment Name: Use the name you gave your deployment in step 2
+3. Get your configuration details from the "Keys and Endpoint" section in your Azure OpenAI resource:
+   - Endpoint
+   - API Key
+   - Deployment Name
 
-4. Update the `appsettings.json` with your configuration in the AzureOpenAI section:
-   ```json
-   "AzureOpenAI": {
-     "Endpoint": "https://your-resource-name.openai.azure.com/",
-     "ApiKey": "your-api-key",
-     "DeploymentName": "your-deployment-name"
-   }
-   ```
+### Azure Cosmos DB Setup
 
-### Azure Communication Service Setup
+1. Create a Cosmos DB account:
+   - In the Azure Portal, search for "Cosmos DB"
+   - Click "Create" and select "Core (SQL)" API
+   - Configure account with appropriate settings
+   - Create a database named "SecondDiary"
+   - Create a container named "DiaryEntries" with partition key "/userId"
 
-Second Diary uses Azure Communication Service to send daily email recommendations based on diary entries. To set up:
+2. Get your connection string and primary key from the "Keys" section
 
-1. Create an Azure Communication Service resource:
+### Azure Communication Services Setup
+
+1. Create a Communication Service resource:
    - In the Azure portal, search for "Communication Services"
-   - Click "Create" and complete the required information
-   - Once created, navigate to your resource
+   - Click "Create" and configure as needed
 
-2. Configure Email Communication Service:
-   - In your Communication Service resource, go to "Email communications" in the left menu
-   - Follow the instructions to connect a domain or use Azure managed domains
-   - Create and verify your sender email address
+2. Set up email services:
+   - Configure a verified domain or use Azure managed domains
+   - Set up your sender email address
 
-3. Get your connection string:
-   - Navigate to "Keys" in the left menu
-   - Copy the connection string for use in your application
+3. Get your connection string from the "Keys" section for use in your application
 
-4. Update your `appsettings.json` with the Communication Service settings:
-   ```json
-   "CommunicationService": {
-     "ConnectionString": "your-communication-service-connection-string",
-     "SenderEmail": "your-verified-sender@domain.com",
-     "SenderName": "Second Diary"
-   }
-   ```
-
-### Running the Application
-
-#### From Visual Studio:
-1. Open the solution file `SecondDiary.sln`
-2. Set `SecondDiary.API` as the startup project
-3. Press F5 to run the application
-
-#### From Command Line:
-1. Navigate to the API project:
-   ```
-   cd SecondDiary.API
-   ```
-2. Run the application:
-   ```
-   dotnet run
-   ```
-3. The application will be available at `https://localhost:5001`
-
-## Publishing to Azure
+## Deploying to Azure
 
 ### Prerequisites
-
-- [Azure CLI](https://docs.microsoft.com/cli/azure/install-azure-cli)
-- Azure Subscription
-- Azure Cosmos DB instance
-- Azure App Service plan
+- Azure subscription
+- Azure CLI installed
 
 ### Deployment Steps
 
-1. **Create Azure Resources**:
-
-   ```bash
-   # Login to Azure
+1. Create Azure resources:
+   ```
    az login
-
-   # Create Resource Group
    az group create --name SecondDiaryResourceGroup --location eastus
-
-   # Create App Service Plan
    az appservice plan create --name SecondDiaryPlan --resource-group SecondDiaryResourceGroup --sku F1
-
-   # Create Web App
-   az webapp create --name SecondDiary --resource-group SecondDiaryResourceGroup --plan SecondDiaryPlan
+   az webapp create --name SecondDiary --resource-group SecondDiaryResourceGroup --plan SecondDiaryPlan --runtime "DOTNET|9.0"
    ```
 
-2. **Configure App Settings**:
-
-   ```bash
-   # Add application settings from your local configuration
+2. Configure app settings (replace with your actual values):
+   ```
    az webapp config appsettings set --name SecondDiary --resource-group SecondDiaryResourceGroup --settings "AzureAd:TenantId=your-tenant-id" "AzureAd:ClientId=your-client-id" "CosmosDb:EndpointUrl=your-cosmos-db-url" "CosmosDb:PrimaryKey=your-primary-key"
    ```
 
-3. **Publish the Application**:
-
-   From Visual Studio:
-   - Right-click on the SecondDiary.API project
-   - Select "Publish"
-   - Choose "Azure" as the target
-   - Select your existing App Service
-
-   From Command Line:
-   ```bash
-   # Publish the app
+3. Publish the application:
+   ```
    dotnet publish SecondDiary.API/SecondDiary.API.csproj -c Release -o ./publish
-
-   # Deploy to Azure
    az webapp deployment source config-zip --name SecondDiary --resource-group SecondDiaryResourceGroup --src ./publish.zip
    ```
 
-4. **Configure Authentication**:
-   - In the Azure Portal, navigate to your App Service
-   - Go to "Authentication" under Settings
-   - Add Microsoft identity provider
-   - Configure the provider with your client ID and secret
-
-5. **Verify Deployment**:
-   - Navigate to `https://seconddiary.azurewebsites.net` (replace with your actual app name)
-   - Ensure you can log in and use the application
-
-## API Endpoints
-
-### Diary Entries
-
-- `GET /api/Diary/{userId}` - Get all diary entries for a user
-- `GET /api/Diary/{userId}/{id}` - Get a specific diary entry
-- `POST /api/Diary` - Create a new diary entry
-- `PUT /api/Diary/{id}` - Update an existing diary entry
-- `DELETE /api/Diary/{userId}/{id}` - Delete a diary entry
-
-### System Prompt
-
-- `GET /api/SystemPrompt/{userId}` - Get the system prompt
-- `POST /api/SystemPrompt/{userId}/line` - Add a line to the system prompt
-- `DELETE /api/SystemPrompt/{userId}/line` - Remove a line from the system prompt
-- `GET /api/SystemPrompt/{userId}/recommendations` - Get AI-generated recommendations based on diary entries
-
 ## Troubleshooting
 
-- **Build Issues**: Ensure all NuGet packages are restored and npm packages are installed
-- **Authentication Issues**: Verify your Microsoft Identity configuration and redirect URLs
-- **CORS Issues**: Ensure your Azure App Service allows the correct origins
-- **Database Issues**: Check your Cosmos DB connection string and permissions
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
+- **Authentication Issues**: Verify your Azure AD configuration and redirect URLs
+- **Database Connection**: Check your Cosmos DB connection string and permissions
+- **AI Integration**: Ensure your Azure OpenAI API keys and deployment names are correct
+- **Email Notifications**: Verify your Communication Services connection string and sender email
