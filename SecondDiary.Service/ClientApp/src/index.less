@@ -328,3 +328,165 @@ body {
     }
   }
 }
+
+// Header styling
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  padding: 0 1rem;
+}
+
+.header-left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.header-profile {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+  margin-right: 1rem;
+  
+  .btn {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border: none;
+    cursor: pointer;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+    
+    &:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+  }
+  
+  .btn-primary {
+    background-color: @primary-color;
+    color: white;
+    
+    .light-theme & {
+      background-color: @primary-color;
+    }
+    
+    .dark-theme & {
+      background-color: lighten(@primary-color, 10%);
+    }
+    
+    &:hover {
+      background-color: darken(@primary-color, 10%);
+      
+      .dark-theme & {
+        background-color: lighten(@primary-color, 5%);
+      }
+    }
+  }
+  
+  .btn-secondary {
+    .light-theme & {
+      background-color: #6c757d;
+      color: white;
+    }
+    
+    .dark-theme & {
+      background-color: #868e96;
+      color: #333;
+    }
+    
+    &:hover {
+      .light-theme & {
+        background-color: #5a6268;
+      }
+      
+      .dark-theme & {
+        background-color: #adb5bd;
+      }
+    }
+  }
+  
+  .btn-outline-secondary {
+    .light-theme & {
+      background-color: transparent;
+      border: 1px solid @primary-color;
+      color: @primary-color;
+      
+      &:hover {
+        background-color: rgba(74, 107, 175, 0.1);
+        color: darken(@primary-color, 10%);
+      }
+    }
+    
+    .dark-theme & {
+      background-color: transparent;
+      border: 1px solid lighten(@primary-color, 20%);
+      color: lighten(@primary-color, 20%);
+      
+      &:hover {
+        background-color: rgba(74, 107, 175, 0.2);
+        color: lighten(@primary-color, 30%);
+      }
+    }
+  }
+  
+  .me-2 {
+    margin-right: 0.5rem;
+  }
+}
+
+// Mobile optimization for header controls
+@media (max-width: 768px) {
+  .header-container {
+    flex-direction: row;
+    align-items: flex-start;
+    padding: 0.75rem 1rem;
+  }
+  
+  .header-left {
+    max-width: 60%;
+  }
+  
+  .header-profile {
+    font-size: 0.8rem;
+  }
+  
+  .header-controls {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+    margin-right: 0.5rem;
+    
+    .btn {
+      padding: 0.35rem 0.7rem;
+      font-size: 0.75rem;
+      white-space: nowrap;
+    }
+    
+    .me-2 {
+      margin-right: 0;
+      margin-bottom: 0.25rem;
+    }
+  }
+  
+  h1 {
+    font-size: 1.5rem;
+    margin: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+}

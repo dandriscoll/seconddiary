@@ -261,18 +261,48 @@ const App: React.FC = () => {
   return (
     <div className={`App ${theme}-theme`}>
       <header className="App-header">
-        <h1>Second Diary</h1>
-        {isAuthenticated ? (
-          <div className="authenticated-container">
-            <button className="btn btn-secondary" onClick={handleSignOut}>
-              Sign Out
-            </button>
+        <div className="header-container">
+          <div className="header-left">
+            <h1>Second Diary</h1>
+            {isAuthenticated && !tokenLoading && token && (
+              <div className="header-profile">
+                <ProfileContent />
+              </div>
+            )}
           </div>
-        ) : (
-          <button className="btn btn-primary" onClick={handleLogin}>
-            Sign In
-          </button>
-        )}
+          <div className="header-controls">
+            {isAuthenticated ? (
+              <>
+                {tokenLoading ? (
+                  <span className="loading-token">Loading...</span>
+                ) : token && (
+                  <>
+                    <button 
+                      onClick={toggleSystemPrompt}
+                      className="btn btn-outline-secondary me-2"
+                    >
+                      {showSystemPrompt ? 'Hide System Prompt' : 'Show System Prompt'}
+                    </button>
+                    
+                    <button 
+                      onClick={toggleEmailSettings}
+                      className="btn btn-outline-secondary me-2"
+                    >
+                      {showEmailSettings ? 'Hide Email Settings' : 'Show Email Settings'}
+                    </button>
+                  </>
+                )}
+                <button className="btn btn-secondary" onClick={handleSignOut}>
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <button className="btn btn-primary" onClick={handleLogin}>
+                Sign In
+              </button>
+            )}
+          </div>
+        </div>
       </header>
 
       <main className="App-main">
@@ -281,37 +311,14 @@ const App: React.FC = () => {
         </UnauthenticatedTemplate>
 
         <AuthenticatedTemplate>
-          <div className="profile-container">
-            <ProfileContent />
-          </div>
-          
-          {tokenLoading ? (
-            <p>Loading authentication token...</p>
-          ) : token ? (
-            <div className="system-prompt-section">
-              <button 
-                onClick={toggleSystemPrompt}
-                className="btn btn-outline-secondary mb-3 w-100"
-              >
-                {showSystemPrompt ? 'Hide System Prompt Editor' : 'Show System Prompt Editor'}
-              </button>
-              
+          {token ? (
+            <>
               {showSystemPrompt && <SystemPromptEditor token={token} />}
-            </div>
-          ) : (
+              {showEmailSettings && <EmailSettings token={token} userEmail={userEmail} />}
+            </>
+          ) : !tokenLoading && (
             <p>Token is missing. Please try signing in again.</p>
           )}
-          
-          <div className="email-settings-section">
-            <button 
-              onClick={toggleEmailSettings}
-              className="btn btn-outline-secondary mb-3 w-100"
-            >
-              {showEmailSettings ? 'Hide Email Settings' : 'Show Email Settings'}
-            </button>
-            
-            {showEmailSettings && token && <EmailSettings token={token} userEmail={userEmail} />}
-          </div>
           
           <div className="diary-entry-form">
             <h2>Create New Entry</h2>
