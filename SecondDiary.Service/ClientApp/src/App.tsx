@@ -359,7 +359,7 @@ const App: React.FC = () => {
               <button
                 type="button"
                 onClick={handleGetRecommendation}
-                disabled={isPosting || isGettingRecommendation}
+                disabled={isPosting || isGettingRecommendation || !!thought.trim()}
                 className="recommendation-button full-width-button"
               >
                 {isGettingRecommendation ? 'Loading Recommendation...' : 'Get Recommendation'}
