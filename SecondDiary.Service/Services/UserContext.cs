@@ -54,19 +54,24 @@ namespace SecondDiary.Services
             }
         }
 
-        private string SanitizeUserId(string encryptedId)
+        private string SanitizeUserId(string userId)
         {
-            if (string.IsNullOrEmpty(encryptedId))
+            if (string.IsNullOrEmpty(userId))
                 return string.Empty;
             
             // Remove special characters, keeping only alphanumeric
-            string sanitized = Regex.Replace(encryptedId, "[^a-zA-Z0-9]", "");
+            using (System.Security.Cryptography.SHA256 sha256 = System.Security.Cryptography.SHA256.Create())
+            {
+                byte[] hashBytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(userId));
+                // Convert to Base64 and take first 20 chars (or whatever length you need)
+                userId = Regex.Replace(Convert.ToBase64String(hashBytes), "[^a-zA-Z0-9]", "");
+            }
             
             // Trim to specified length
-            if (sanitized.Length > 20)
-                sanitized = sanitized.Substring(0, 20);
+            if (userId.Length > 20)
+                userId = userId.Substring(0, 20);
                 
-            return sanitized;
+            return userId;
         }
     }
 }

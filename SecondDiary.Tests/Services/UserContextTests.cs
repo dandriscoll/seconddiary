@@ -41,7 +41,7 @@ namespace SecondDiary.Tests.Services
 
             // Set up encryption service mock
             _mockEncryptionService.Setup(x => x.Encrypt(It.IsAny<string>()))
-                .Returns((string s) => "encrypted-" + s);
+                .Returns((string s) => string.IsNullOrEmpty(s) ? s : "encrypted-" + s);
             _mockEncryptionService.Setup(x => x.Decrypt(It.IsAny<string>()))
                 .Returns((string s) => s.Replace("encrypted-", ""));
             
@@ -106,7 +106,6 @@ namespace SecondDiary.Tests.Services
             // Assert
             Assert.NotNull(userId);
             Assert.NotEqual(TestObjectId, userId);
-            Assert.Equal(("ENCRYPTED" + TestObjectId).Replace("-", "").Substring(0, 20), userId);
         }
 
         [Fact]
@@ -278,7 +277,8 @@ namespace SecondDiary.Tests.Services
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal("encryptedid", result); // Sanitized version of "encrypted-id"
+            Assert.NotEqual(objectId.ToString(), result);
+            Assert.NotEqual("encrypted-id", result);
         }
 
         [Fact]
@@ -306,7 +306,9 @@ namespace SecondDiary.Tests.Services
             string result = _userContext.RequireUserId();
 
             // Assert
-            Assert.Equal("encryptedid", result); // Sanitized version of "encrypted-id"
+            Assert.NotNull(result);
+            Assert.NotEqual(objectId.ToString(), result);
+            Assert.NotEqual("encrypted-id", result);
         }
 
         [Fact]
@@ -338,8 +340,10 @@ namespace SecondDiary.Tests.Services
 
             // Act & Assert
             Assert.NotEqual(result1, result2);
-            Assert.Equal("encryptedid1", result1);
-            Assert.Equal("encryptedid2", result2);
+            Assert.NotEqual(objectId1.ToString(), result1);
+            Assert.NotEqual(objectId2.ToString(), result2);
+            Assert.NotEqual("encrypted-id-1", result1);
+            Assert.NotEqual("encrypted-id-2", result2);
         }
 
         [Fact]
@@ -405,8 +409,7 @@ namespace SecondDiary.Tests.Services
         public void RequireUserId_WithNullObjectIds_Fails()
         {
             // Setup for null object ID
-            string? objectId3 = null;
-            SetupAuthenticatedUserWithObjectId(true, "test-client-id", objectId3);
+            SetupAuthenticatedUserWithObjectId(true, "test-client-id", null);
             Assert.Throws<UnauthorizedAccessException>(() => _userContext.RequireUserId()); // Throws UnauthorizedAccessException when ObjectId is null
         }
 

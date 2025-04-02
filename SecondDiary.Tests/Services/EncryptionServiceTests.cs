@@ -80,5 +80,21 @@ namespace SecondDiary.Tests.Services
             // Act & Assert
             Assert.Throws<InvalidOperationException>(() => new EncryptionService(mockConfiguration.Object));
         }
+
+        [Fact]
+        public void Encrypt_DifferentGuids_ReturnsDifferentEncryptedValues()
+        {
+            // Arrange
+            string guid1 = Guid.NewGuid().ToString();
+            string guid2 = Guid.NewGuid().ToString();
+
+            // Act
+            string encryptedGuid1 = _encryptionService.Encrypt(guid1);
+            string encryptedGuid2 = _encryptionService.Encrypt(guid2);
+
+            // Assert
+            Assert.NotEqual(guid1, guid2);
+            Assert.NotEqual(encryptedGuid1, encryptedGuid2);
+        }
     }
 }
