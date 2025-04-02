@@ -48,14 +48,12 @@ namespace SecondDiary.Services
 
             // Format the diary entries for the prompt
             StringBuilder entriesText = new StringBuilder();
-            foreach (DiaryEntry entry in entries)
+            foreach (DiaryEntry entry in entries.OrderBy(d => d.Date))
             {
-                entriesText.AppendLine($"Date: {entry.Date}");
-                if (!string.IsNullOrEmpty(entry.Thought))
-                {
-                    entriesText.AppendLine($"Thought: {entry.Thought}");
-                }
-                entriesText.AppendLine();
+                if (!string.IsNullOrEmpty(entry.Context))
+                    entriesText.AppendLine($"At {entry.Date} I wrote: {entry.Thought} in the context of {entry.Context}");
+                else
+                    entriesText.AppendLine($"At {entry.Date} I wrote: {entry.Thought}");
             }
 
             // Create the messages collection
