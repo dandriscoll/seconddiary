@@ -72,7 +72,8 @@ namespace SecondDiary.Controllers
                         UserId = userId,
                         Email = userEmail,
                         PreferredTime = TimeSpan.FromSeconds(settings.PreferredTime.TotalSeconds),
-                        IsEnabled = settings.IsEnabled
+                        IsEnabled = settings.IsEnabled,
+                        TimeZone = settings.TimeZone // Copy the timezone from the request
                     };
 
                     var result = await _cosmosDbService.CreateEmailSettingsAsync(newSettings);
@@ -84,6 +85,9 @@ namespace SecondDiary.Controllers
                     existingSettings.Email = userEmail; // Always update with the latest email from token
                     existingSettings.PreferredTime = TimeSpan.FromSeconds(settings.PreferredTime.TotalSeconds);
                     existingSettings.IsEnabled = settings.IsEnabled;
+                    // Preserve timezone setting if not provided in the update
+                    if (!string.IsNullOrEmpty(settings.TimeZone))
+                        existingSettings.TimeZone = settings.TimeZone;
 
                     var result = await _cosmosDbService.UpdateEmailSettingsAsync(existingSettings);
                     return Ok(result);

@@ -85,7 +85,7 @@ export const EmailSettings: React.FC<EmailSettingsProps> = ({ token, userEmail }
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     setIsSaving(true);
     setError(null);
@@ -96,16 +96,20 @@ export const EmailSettings: React.FC<EmailSettingsProps> = ({ token, userEmail }
       const formattedPreferredTime: string = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00.00000`;
       
       const settingsToSave: {
-        id: string;
+        id?: string;
         preferredTime: string;
         isEnabled: boolean;
         timeZone: string;
       } = {
-        id: emailSettings?.id || '',
         preferredTime: formattedPreferredTime,
         isEnabled: isEnabled,
         timeZone: timeZone
       };
+      
+      // Only include ID if we have existing settings
+      if (emailSettings?.id) {
+        settingsToSave.id = emailSettings.id;
+      }
 
       const response = await fetch('/api/emailSettings', {
         method: 'POST',

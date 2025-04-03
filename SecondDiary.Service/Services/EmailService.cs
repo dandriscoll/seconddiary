@@ -319,7 +319,14 @@ namespace SecondDiary.Services
                         DateTime currentTimeInUserTimeZone = TimeZoneInfo.ConvertTimeFromUtc(currentUtcDateTime, userTimeZone);
                         
                         // Create a DateTime object for today with the user's preferred time in their timezone
-                        DateTime preferredTimeToday = currentTimeInUserTimeZone.Date.Add(emailSettings.PreferredTime);
+                        DateTime preferredTimeToday = new DateTime(
+                            currentTimeInUserTimeZone.Year,
+                            currentTimeInUserTimeZone.Month,
+                            currentTimeInUserTimeZone.Day,
+                            emailSettings.PreferredTime.Hours,
+                            emailSettings.PreferredTime.Minutes,
+                            0,
+                            DateTimeKind.Unspecified);
                         
                         // Convert preferred time to UTC for comparison
                         DateTime preferredTimeInUtc = TimeZoneInfo.ConvertTimeToUtc(preferredTimeToday, userTimeZone);
