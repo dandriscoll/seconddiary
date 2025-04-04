@@ -495,3 +495,331 @@ button.recommendation-button {
     border-bottom: none;
   }
 }
+
+// Option panels styling (for SystemPrompt and EmailSettings)
+.option-panel {
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+  transition: all 0.3s ease;
+  
+  .light-theme & {
+    background-color: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+  }
+  
+  .dark-theme & {
+    background-color: #2a2a2a;
+    border: 1px solid #3a3a3a;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+  }
+  
+  h2 {
+    color: @primary-color;
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+    
+    .dark-theme & {
+      color: lighten(@primary-color, 15%);
+    }
+  }
+  
+  .panel-section {
+    margin-bottom: 20px;
+    padding: 15px;
+    border-radius: 6px;
+    
+    .light-theme & {
+      background-color: white;
+      border: 1px solid #eee;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+    
+    .dark-theme & {
+      background-color: #333;
+      border: 1px solid #444;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    }
+  }
+  
+  .panel-header {
+    font-weight: 600;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    
+    .light-theme & {
+      border-bottom: 1px solid #e5e5e5;
+      color: #444;
+    }
+    
+    .dark-theme & {
+      border-bottom: 1px solid #444;
+      color: #ddd;
+    }
+  }
+}
+
+// Email settings specific styling
+.email-settings {
+  .option-panel();
+  
+  .description {
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+    
+    .dark-theme & {
+      color: #bbb;
+    }
+  }
+  
+  .email-display {
+    padding: 10px;
+    border-radius: 4px;
+    font-weight: 500;
+    margin-bottom: 5px;
+    
+    .light-theme & {
+      background-color: #f5f5f5;
+      border: 1px solid #ddd;
+    }
+    
+    .dark-theme & {
+      background-color: #333;
+      border: 1px solid #444;
+    }
+  }
+  
+  .hint {
+    font-size: 0.85rem;
+    margin-top: 5px;
+    
+    .light-theme & {
+      color: #666;
+    }
+    
+    .dark-theme & {
+      color: #aaa;
+    }
+  }
+  
+  .time-input, .time-zone-select {
+    .full-width-input();
+  }
+  
+  .checkbox-group {
+    display: flex;
+    align-items: center;
+    
+    input[type="checkbox"] {
+      margin-right: 10px;
+    }
+    
+    label {
+      margin-bottom: 0;
+    }
+  }
+  
+  .error-message, .success-message {
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+  }
+  
+  .error-message {
+    background-color: rgba(220, 53, 69, 0.1);
+    border: 1px solid rgba(220, 53, 69, 0.3);
+    color: #dc3545;
+    
+    .dark-theme & {
+      background-color: rgba(220, 53, 69, 0.2);
+      color: #f8d7da;
+    }
+  }
+  
+  .success-message {
+    background-color: rgba(40, 167, 69, 0.1);
+    border: 1px solid rgba(40, 167, 69, 0.3);
+    color: #28a745;
+    
+    .dark-theme & {
+      background-color: rgba(40, 167, 69, 0.2);
+      color: #d4edda;
+    }
+  }
+  
+  .save-button {
+    background-color: @primary-color;
+    
+    .light-theme & {
+      &:hover {
+        background-color: darken(@primary-color, 10%);
+      }
+    }
+    
+    .dark-theme & {
+      background-color: lighten(@primary-color, 10%);
+      
+      &:hover {
+        background-color: lighten(@primary-color, 5%);
+      }
+    }
+  }
+}
+
+// System prompt editor specific styling
+.system-prompt-editor {
+  .option-panel();
+  
+  .prompt-list {
+    margin-bottom: 20px;
+  }
+  
+  .prompt-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    
+    .light-theme & {
+      background-color: white;
+      border: 1px solid #e5e5e5;
+    }
+    
+    .dark-theme & {
+      background-color: #333;
+      border: 1px solid #444;
+    }
+    
+    .prompt-content {
+      flex: 1;
+    }
+    
+    .delete-button {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      
+      &:hover {
+        background-color: darken(#dc3545, 10%);
+      }
+    }
+  }
+  
+  .empty-prompt {
+    text-align: center;
+    padding: 15px;
+    font-style: italic;
+    
+    .light-theme & {
+      color: #777;
+    }
+    
+    .dark-theme & {
+      color: #aaa;
+    }
+  }
+  
+  .add-prompt-section {
+    .panel-section();
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    
+    input {
+      flex: 1;
+      .full-width-input();
+    }
+    
+    button {
+      background-color: @primary-color;
+      color: white;
+      border: none;
+      padding: 12px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      white-space: nowrap;
+      
+      .light-theme & {
+        &:hover {
+          background-color: darken(@primary-color, 10%);
+        }
+      }
+      
+      .dark-theme & {
+        background-color: lighten(@primary-color, 10%);
+        
+        &:hover {
+          background-color: lighten(@primary-color, 5%);
+        }
+      }
+      
+      &:disabled {
+        .light-theme & {
+          background-color: #cccccc;
+        }
+        
+        .dark-theme & {
+          background-color: #555;
+        }
+      }
+    }
+  }
+  
+  .alert {
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+  }
+  
+  .alert-success {
+    background-color: rgba(40, 167, 69, 0.1);
+    border: 1px solid rgba(40, 167, 69, 0.3);
+    color: #28a745;
+    
+    .dark-theme & {
+      background-color: rgba(40, 167, 69, 0.2);
+      color: #d4edda;
+    }
+  }
+  
+  .alert-danger {
+    background-color: rgba(220, 53, 69, 0.1);
+    border: 1px solid rgba(220, 53, 69, 0.3);
+    color: #dc3545;
+    
+    .dark-theme & {
+      background-color: rgba(220, 53, 69, 0.2);
+      color: #f8d7da;
+    }
+  }
+}
+
+// Mobile optimization
+@media (max-width: 768px) {
+  // ...existing code...
+  
+  .option-panel {
+    padding: 15px;
+    
+    .panel-section {
+      padding: 10px;
+    }
+  }
+  
+  .email-settings, .system-prompt-editor {
+    .add-prompt-section {
+      flex-direction: column;
+      
+      input, button {
+        width: 100%;
+      }
+    }
+  }
+}

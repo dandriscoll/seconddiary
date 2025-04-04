@@ -190,51 +190,55 @@ export const EmailSettings: React.FC<EmailSettingsProps> = ({ token, userEmail }
       {successMessage && <div className="success-message">{successMessage}</div>}
       
       <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="email">Email Address</label>
-          <div className="email-display">{email || 'Loading email address...'}</div>
-          <p className="hint">Your email address is automatically retrieved from your account.</p>
-        </div>
+        <div className="panel-section">
+          <div className="panel-header">Email Configuration</div>
+          
+          <div className="form-group">
+            <label htmlFor="email">Email Address</label>
+            <div className="email-display">{email || 'Loading email address...'}</div>
+            <p className="hint">Your email address is automatically retrieved from your account.</p>
+          </div>
 
-        <div className="form-group">
-          <label htmlFor="preferredTime">Preferred Time</label>
-          <input
-            type="time"
-            id="preferredTime"
-            value={preferredTime}
-            onChange={(e) => setPreferredTime(e.target.value)}
-            required
-            className="time-input"
-          />
-          <p className="hint">Time when you'd like to receive your daily recommendation email.</p>
-        </div>
+          <div className="form-group">
+            <label htmlFor="preferredTime">Preferred Time</label>
+            <input
+              type="time"
+              id="preferredTime"
+              value={preferredTime}
+              onChange={(e) => setPreferredTime(e.target.value)}
+              required
+              className="time-input"
+            />
+            <p className="hint">Time when you'd like to receive your daily recommendation email.</p>
+          </div>
 
-        <div className="form-group">
-          <label htmlFor="timeZone">Time Zone</label>
-          <select
-            id="timeZone"
-            value={timeZone}
-            onChange={(e) => setTimeZone(e.target.value)}
-            required
-            className="time-zone-select"
-          >
-            {getTimeZones().map((tz) => (
-              <option key={tz} value={tz}>
-                {tz.replace(/_/g, ' ')}
-              </option>
-            ))}
-          </select>
-          <p className="hint">Your local time zone for email delivery timing.</p>
-        </div>
+          <div className="form-group">
+            <label htmlFor="timeZone">Time Zone</label>
+            <select
+              id="timeZone"
+              value={timeZone}
+              onChange={(e) => setTimeZone(e.target.value)}
+              required
+              className="time-zone-select"
+            >
+              {getTimeZones().map((tz) => (
+                <option key={tz} value={tz}>
+                  {tz.replace(/_/g, ' ')}
+                </option>
+              ))}
+            </select>
+            <p className="hint">Your local time zone for email delivery timing.</p>
+          </div>
 
-        <div className="form-group checkbox-group">
-          <input
-            type="checkbox"
-            id="isEnabled"
-            checked={isEnabled}
-            onChange={(e) => setIsEnabled(e.target.checked)}
-          />
-          <label htmlFor="isEnabled">Enable daily recommendation emails</label>
+          <div className="form-group checkbox-group">
+            <input
+              type="checkbox"
+              id="isEnabled"
+              checked={isEnabled}
+              onChange={(e) => setIsEnabled(e.target.checked)}
+            />
+            <label htmlFor="isEnabled">Enable daily recommendation emails</label>
+          </div>
         </div>
 
         <div className="button-group">

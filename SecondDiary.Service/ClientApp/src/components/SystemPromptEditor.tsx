@@ -123,55 +123,41 @@ const SystemPromptEditor: React.FC<SystemPromptEditorProps> = ({ token }) => {
   };
 
   return (
-    <div className="container">
-      <h2 className="mt-4 mb-3">System Prompt Editor</h2>
+    <div className="system-prompt-editor">
+      <h2>System Prompt Editor</h2>
       {message && <div className="alert alert-success">{message}</div>}
       {error && <div className="alert alert-danger">{error}</div>}
       <p>Manage your system prompt lines by adding or removing lines.</p>
       
-      <div className="card mb-4">
-        <div className="card-header">Prompt Lines</div>
-        <ul className="list-group list-group-flush">
-          {promptLines.map((line, index) => (
-            <li key={line.id} className="list-group-item">
-              <div className="row">
-                <div className="col">{line.content || <em>Empty line</em>}</div>
-                <div className="col-md-auto">
-                  <button className="btn btn-danger" onClick={() => deleteLine(index)}>Delete</button>
-                </div>
+      <div className="panel-section">
+        <div className="panel-header">Prompt Lines</div>
+        <div className="prompt-list">
+          {promptLines.length === 0 ? (
+            <div className="empty-prompt">No prompt lines defined</div>
+          ) : (
+            promptLines.map((line, index) => (
+              <div key={line.id} className="prompt-item">
+                <div className="prompt-content">{line.content || <em>Empty line</em>}</div>
+                <button className="delete-button" onClick={() => deleteLine(index)}>Delete</button>
               </div>
-            </li>
-          ))}
-          {promptLines.length === 0 && (
-            <li className="list-group-item text-center"><em>No prompt lines defined</em></li>
+            ))
           )}
-        </ul>
+        </div>
       </div>
       
-      <div className="card mb-4">
-        <div className="card-header">Add New Line</div>
-        <div className="card-body">
-          <div className="row">
-            <div className="col">
-              <input
-                type="text"
-                className="form-control"
-                value={newLineContent}
-                placeholder="Enter a new prompt line"
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setNewLineContent(e.target.value)}
-              />
-            </div>
-            <div className="col-md-auto">
-              <button 
-                className="btn btn-primary" 
-                onClick={addNewLine}
-                disabled={!newLineContent.trim()}
-              >
-                Add Line
-              </button>
-            </div>
-          </div>
-        </div>
+      <div className="add-prompt-section">
+        <input
+          type="text"
+          value={newLineContent}
+          placeholder="Enter a new prompt line"
+          onChange={(e: ChangeEvent<HTMLInputElement>) => setNewLineContent(e.target.value)}
+        />
+        <button 
+          onClick={addNewLine}
+          disabled={!newLineContent.trim()}
+        >
+          Add Line
+        </button>
       </div>
     </div>
   );
