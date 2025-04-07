@@ -90,21 +90,20 @@ const SystemPromptEditor: React.FC<SystemPromptEditorProps> = ({ token }) => {
     if (!token) return;
     
     try {
-      // Filter out the line to be deleted and join the rest
-      const updatedLines: PromptLine[] = [...promptLines];
-      updatedLines.splice(index, 1);
-      const updatedContent: string = updatedLines.map(line => line.content).join('\n');
+      const lineToDelete: string = promptLines[index].content;
       
-      const response: Response = await fetch('api/SystemPrompt', {
-        method: 'POST',
+      const response: Response = await fetch('api/SystemPrompt/line', {
+        method: 'DELETE',
         headers: {
-          'Content-Type': 'text/plain',
+          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: updatedContent
+        body: JSON.stringify(lineToDelete)
       });
       
       if (response.ok) {
+        const updatedLines: PromptLine[] = [...promptLines];
+        updatedLines.splice(index, 1);
         setPromptLines(updatedLines);
         showSuccessMessage('Line deleted successfully');
       } else
