@@ -277,6 +277,11 @@ namespace SecondDiary.Services
             }
         }
 
+        protected virtual DateTime GetCurrentUtcTime()
+        {
+            return DateTime.UtcNow;
+        }
+
         public async Task<bool> CheckAndSendScheduledEmailsAsync()
         {
             try
@@ -284,9 +289,8 @@ namespace SecondDiary.Services
                 _logger.LogInformation("Starting scheduled email check");
                 bool sentAnyEmails = false;
                 
-                // Get current UTC time 
-                TimeSpan currentUtcTime = DateTime.UtcNow.TimeOfDay;
-                DateTime currentUtcDateTime = DateTime.UtcNow;
+                // Get current UTC time
+                DateTime currentUtcDateTime = GetCurrentUtcTime();
                 
                 // Get all email settings
                 IEnumerable<EmailSettings> allEmailSettings = await _cosmosDbService.GetAllEmailSettingsAsync();
@@ -300,7 +304,7 @@ namespace SecondDiary.Services
                     
                     try
                     {
-                        // Convert user's preferred time to UTC based on their timezone
+                        // Get timezone from user settings, default to UTC if not specified
                         string timezone = string.IsNullOrEmpty(emailSettings.TimeZone) ? "UTC" : emailSettings.TimeZone;
                         
                         // Get current time in user's timezone
@@ -318,7 +322,7 @@ namespace SecondDiary.Services
                         // Calculate the current time in user's timezone
                         DateTime currentTimeInUserTimeZone = TimeZoneInfo.ConvertTimeFromUtc(currentUtcDateTime, userTimeZone);
                         
-                        // Create a DateTime object for today with the user's preferred time in their timezone
+                        // Create a DateTime object for the user's preferred time today in their timezone
                         DateTime preferredTimeToday = new DateTime(
                             currentTimeInUserTimeZone.Year,
                             currentTimeInUserTimeZone.Month,
@@ -328,15 +332,15 @@ namespace SecondDiary.Services
                             0,
                             DateTimeKind.Unspecified);
                         
-                        // Convert preferred time to UTC for comparison
+                        // Convert this local preferred time to UTC for comparison
                         DateTime preferredTimeInUtc = TimeZoneInfo.ConvertTimeToUtc(preferredTimeToday, userTimeZone);
                         
-                        // Check if it's time to send the email (within 5 minutes of preferred time)
+                        // Check if it's time to send the email (within 5 minutes after the preferred time)
                         TimeSpan timeDifference = currentUtcDateTime - preferredTimeInUtc;
                         
                         if (timeDifference.TotalMinutes < 0 || timeDifference.TotalMinutes > 5)
-                            continue;
-                        
+                                                    continue;
+                                                
                         // Check if we've already sent an email today (using user's local date)
                         if (emailSettings.LastEmailSent.HasValue)
                         {
@@ -344,9 +348,9 @@ namespace SecondDiary.Services
                             DateTime lastSentUserTime = TimeZoneInfo.ConvertTimeFromUtc(lastSentUtc, userTimeZone);
                             
                             if (lastSentUserTime.Date == currentTimeInUserTimeZone.Date)
-                                continue;
-                        }
-                        
+                                                            continue;
+                            }
+                                                
                         string userId = emailSettings.UserId;
                         
                         // Generate recommendation using OpenAI
@@ -356,7 +360,9 @@ namespace SecondDiary.Services
                         await SendRecommendationEmailAsync(userId, emailSettings.Email, recommendation);
                         sentAnyEmails = true;
                         
-                        _logger.LogInformation($"Sent scheduled email to user {userId} at {emailSettings.Email} (timezone: {timezone})");
+                        _logger.LogInformation($"Sent scheduled email to user {userId} at {emailSettings.Email} " +
+                                             $"(timezone: {timezone}, local time: {currentTimeInUserTimeZone}, " +
+                                             $"preferred time: {preferredTimeToday})");
                     }
                     catch (Exception ex)
                     {
