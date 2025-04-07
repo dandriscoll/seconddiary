@@ -98,7 +98,7 @@ namespace SecondDiary.Services
                     </div>
                     <p>{outro}</p>
                     <p>
-                        <a href='#YOUR_APP_URL#' class='button'>Visit Second Diary</a>
+                        <a href='{_communicationSettings.BaseUrl}' class='button'>Visit Second Diary</a>
                     </p>
                 </div>
                 <div class='footer'>
@@ -119,7 +119,7 @@ namespace SecondDiary.Services
 
             {outro}
 
-            Visit Second Diary: #YOUR_APP_URL#
+            Visit Second Diary: {_communicationSettings.BaseUrl}
 
             If you'd like to update your email preferences, please visit your account settings.
 
