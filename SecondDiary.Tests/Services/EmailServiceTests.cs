@@ -148,7 +148,7 @@ namespace SecondDiary.Tests.Services
                 x => x.Log(
                     It.IsAny<LogLevel>(),
                     It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("Sent scheduled email")),
+                    It.Is<It.IsAnyType>((v, t) => (v.ToString() ?? string.Empty).Contains("Sent scheduled email")),
                     It.IsAny<Exception>(),
                     It.IsAny<Func<It.IsAnyType, Exception, string>>()!),
                 Times.Once);
