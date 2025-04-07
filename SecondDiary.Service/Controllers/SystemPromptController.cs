@@ -37,7 +37,7 @@ namespace SecondDiary.Controllers
                 return BadRequest("Line cannot be empty");
 
             string userId = _userContext.RequireUserId();
-            await _systemPromptService.AddLineToPromptAsync(userId, line);
+            await _systemPromptService.AddLineToPromptAsync(userId, line.Trim());
             return Ok();
         }
 
@@ -48,7 +48,7 @@ namespace SecondDiary.Controllers
                 return BadRequest("Line text cannot be empty");
 
             string userId = _userContext.RequireUserId();
-            await _systemPromptService.RemoveLineAsync(userId, line);
+            await _systemPromptService.RemoveLineAsync(userId, line.Trim());
             return Ok();
         }
 
