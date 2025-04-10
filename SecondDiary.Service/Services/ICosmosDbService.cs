@@ -25,5 +25,9 @@ namespace SecondDiary.Services
         Task<IEnumerable<EmailSettings>> GetAllEmailSettingsAsync();
         Task<EmailSettings> UpdateEmailSettingsAsync(EmailSettings settings);
         Task DeleteEmailSettingsAsync(string userId);
+        
+        // Recommendations
+        Task<Recommendation> CreateRecommendationAsync(Recommendation recommendation);
+        Task<IEnumerable<Recommendation>> GetRecentRecommendationsAsync(string userId, int count = 5);
     }
 }

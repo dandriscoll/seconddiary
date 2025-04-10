@@ -11,6 +11,7 @@ namespace SecondDiary.Services
         private readonly Container _diaryContainer;
         private readonly Container _promptContainer;
         private readonly Container _emailSettingsContainer;
+        private readonly Container _recommendationsContainer;
         private readonly IEncryptionService _encryptionService;
         private readonly ILogger<CosmosDbService> _logger;
 
@@ -24,6 +25,7 @@ namespace SecondDiary.Services
             _diaryContainer = _cosmosClient.GetContainer(settings.DatabaseName, settings.DiaryEntriesContainerName);
             _promptContainer = _cosmosClient.GetContainer(settings.DatabaseName, settings.SystemPromptsContainerName);
             _emailSettingsContainer = _cosmosClient.GetContainer(settings.DatabaseName, settings.EmailSettingsContainerName);
+            _recommendationsContainer = _cosmosClient.GetContainer(settings.DatabaseName, settings.RecommendationsContainerName);
             _encryptionService = encryptionService;
             _logger = logger;
         }
@@ -39,6 +41,7 @@ namespace SecondDiary.Services
             _diaryContainer = _cosmosClient.GetContainer(settings.DatabaseName, settings.DiaryEntriesContainerName);
             _promptContainer = _cosmosClient.GetContainer(settings.DatabaseName, settings.SystemPromptsContainerName);
             _emailSettingsContainer = _cosmosClient.GetContainer(settings.DatabaseName, settings.EmailSettingsContainerName);
+            _recommendationsContainer = _cosmosClient.GetContainer(settings.DatabaseName, settings.RecommendationsContainerName);
             _encryptionService = encryptionService;
             _logger = logger;
         }
@@ -61,6 +64,9 @@ namespace SecondDiary.Services
 
                 await database.CreateContainerIfNotExistsAsync(_emailSettingsContainer.Id, "/userId");
                 _logger.LogInformation($"Container {_emailSettingsContainer.Id} initialized");
+
+                await database.CreateContainerIfNotExistsAsync(_recommendationsContainer.Id, "/userId");
+                _logger.LogInformation($"Container {_recommendationsContainer.Id} initialized");
 
                 _logger.LogInformation("Cosmos DB initialization completed successfully");
             }
@@ -208,8 +214,6 @@ namespace SecondDiary.Services
             await _promptContainer.DeleteItemAsync<SystemPrompt>(id, new PartitionKey(userId));
         }
 
-        #region EmailSettings
-
         public async Task<EmailSettings> CreateEmailSettingsAsync(EmailSettings settings)
         {
             // Create a new settings object with encrypted email
@@ -314,11 +318,36 @@ namespace SecondDiary.Services
             // First get the settings to get the ID
             EmailSettings? settings = await GetEmailSettingsAsync(userId);
             if (settings != null)
-            {
                 await _emailSettingsContainer.DeleteItemAsync<EmailSettings>(settings.Id, new PartitionKey(userId));
-            }
         }
 
-        #endregion
+        public async Task<Recommendation> CreateRecommendationAsync(Recommendation recommendation)
+        {
+            ItemResponse<Recommendation> response = await _recommendationsContainer.CreateItemAsync(recommendation, new PartitionKey(recommendation.UserId));
+            return response.Resource;
+        }
+
+        public async Task<IEnumerable<Recommendation>> GetRecentRecommendationsAsync(string userId, int count = 5)
+        {
+            List<Recommendation> recommendations = new List<Recommendation>();
+            
+            QueryDefinition queryDefinition = new QueryDefinition(
+                "SELECT TOP @count * FROM c WHERE c.userId = @userId ORDER BY c.date DESC")
+                .WithParameter("@userId", userId)
+                .WithParameter("@count", count);
+
+            FeedIterator<Recommendation> resultSetIterator = _recommendationsContainer.GetItemQueryIterator<Recommendation>(
+                queryDefinition,
+                requestOptions: new QueryRequestOptions { PartitionKey = new PartitionKey(userId) }
+            );
+
+            while (resultSetIterator.HasMoreResults)
+            {
+                FeedResponse<Recommendation> response = await resultSetIterator.ReadNextAsync();
+                recommendations.AddRange(response.ToList());
+            }
+
+            return recommendations;
+        }
     }
 }

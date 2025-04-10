@@ -25,7 +25,8 @@
     "DatabaseName": "SecondDiary",
     "DiaryEntriesContainerName": "DiaryEntries",
     "SystemPromptsContainerName": "SystemPrompts",
-    "EmailSettingsContainerName": "EmailSettings"
+    "EmailSettingsContainerName": "EmailSettings",
+    "RecommendationsContainerName": "Recommendations"
   },
   "Encryption": {
     "Key": "your-32-byte-encryption-key-here"

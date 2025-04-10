@@ -8,5 +8,6 @@ namespace SecondDiary.Models
         public string DiaryEntriesContainerName { get; set; } = string.Empty;
         public string SystemPromptsContainerName { get; set; } = string.Empty;
         public string EmailSettingsContainerName { get; set; } = string.Empty;
+        public string RecommendationsContainerName { get; set; } = string.Empty;
     }
 }

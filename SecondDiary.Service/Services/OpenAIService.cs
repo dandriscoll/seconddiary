@@ -36,15 +36,16 @@ namespace SecondDiary.Services
             _deploymentName = openAISettings.DeploymentName;
             _cosmosDbService = cosmosDbService;
             _systemPromptService = systemPromptService;
-        }
-
-        public async Task<string> GetRecommendationAsync(string userId)
+        }        public async Task<string> GetRecommendationAsync(string userId)
         {
             // Get user's diary entries
             IEnumerable<DiaryEntry> entries = await _cosmosDbService.GetDiaryEntriesAsync(userId);
             
             // Get the system prompt
             string systemPrompt = await _systemPromptService.GetSystemPromptAsync(userId);
+            
+            // Get recent recommendations (up to 5)
+            IEnumerable<Recommendation> recentRecommendations = await _cosmosDbService.GetRecentRecommendationsAsync(userId, 5);
 
             // Format the diary entries for the prompt
             StringBuilder entriesText = new StringBuilder();
@@ -55,12 +56,21 @@ namespace SecondDiary.Services
                 else
                     entriesText.AppendLine($"At {entry.Date} I wrote: {entry.Thought}");
             }
+            
+            // Format recent recommendations
+            StringBuilder recommendationsText = new StringBuilder();
+            if (recentRecommendations.Any())
+            {
+                recommendationsText.AppendLine("\nRecent recommendations I've provided you:");
+                foreach (Recommendation recommendation in recentRecommendations.OrderByDescending(r => r.Date))
+                    recommendationsText.AppendLine($"- {recommendation.Date}: {recommendation.Text}");
+            }
 
             // Create the messages collection
             ChatMessage[] messages =
             {
                 new SystemChatMessage(systemPrompt),
-                new UserChatMessage($"Based on my diary entries, please provide me with thoughtful recommendations:\n\n{entriesText}")
+                new UserChatMessage($"Based on my diary entries, please provide me with thoughtful recommendations. Make them unique from my previous recommendations:{recommendationsText}\n\nMy diary entries:\n{entriesText}")
             };
 
             // Use the new method to get chat completions
@@ -74,8 +84,21 @@ namespace SecondDiary.Services
                     PresencePenalty = 0.0f
                 });
             
+            // Get the recommendation text
+            string recommendationText = result.Value.Content[0].Text;
+            
+            // Store the recommendation in CosmosDB
+            Recommendation newRecommendation = new Recommendation
+            {
+                UserId = userId,
+                Text = recommendationText,
+                Date = DateTimeOffset.Now
+            };
+            
+            await _cosmosDbService.CreateRecommendationAsync(newRecommendation);
+            
             // Return the recommendation
-            return result.Value.Content[0].Text;
+            return recommendationText;
         }
     }
 }
