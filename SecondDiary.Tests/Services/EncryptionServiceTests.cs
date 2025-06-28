@@ -35,10 +35,10 @@ namespace SecondDiary.Tests.Services
         [Theory]
         [InlineData("")]
         [InlineData(null)]
-        public void Encrypt_WithEmptyOrNullInput_ReturnsSameValue(string input)
+        public void Encrypt_WithEmptyOrNullInput_ReturnsSameValue(string? input)
         {
             // Act
-            string result = _encryptionService.Encrypt(input);
+            string result = _encryptionService.Encrypt(input!);
 
             // Assert
             Assert.Equal(input, result);
@@ -61,10 +61,10 @@ namespace SecondDiary.Tests.Services
         [Theory]
         [InlineData("")]
         [InlineData(null)]
-        public void Decrypt_WithEmptyOrNullInput_ReturnsSameValue(string input)
+        public void Decrypt_WithEmptyOrNullInput_ReturnsSameValue(string? input)
         {
             // Act
-            string result = _encryptionService.Decrypt(input);
+            string result = _encryptionService.Decrypt(input!);
 
             // Assert
             Assert.Equal(input, result);

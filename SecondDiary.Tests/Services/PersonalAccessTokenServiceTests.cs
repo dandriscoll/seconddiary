@@ -281,7 +281,7 @@ namespace SecondDiary.Tests.Services
         }
 
         [Fact]
-        public void GeneratedToken_ShouldHaveCorrectFormat()
+        public async Task GeneratedToken_ShouldHaveCorrectFormat()
         {
             // This tests the token generation indirectly through CreateTokenAsync
             // Arrange
@@ -300,7 +300,7 @@ namespace SecondDiary.Tests.Services
 
             // Act
             Task<CreatePersonalAccessTokenResponse> task = _service.CreateTokenAsync(TestUserId);
-            CreatePersonalAccessTokenResponse result = task.Result;
+            CreatePersonalAccessTokenResponse result = await task;
 
             // Assert
             Assert.StartsWith("p_", result.Token);
