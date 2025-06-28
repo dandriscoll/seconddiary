@@ -12,6 +12,7 @@ namespace SecondDiary.Services
         private readonly Container _promptContainer;
         private readonly Container _emailSettingsContainer;
         private readonly Container _recommendationsContainer;
+        private readonly Container _personalAccessTokensContainer;
         private readonly IEncryptionService _encryptionService;
         private readonly ILogger<CosmosDbService> _logger;
 
@@ -26,6 +27,7 @@ namespace SecondDiary.Services
             _promptContainer = _cosmosClient.GetContainer(settings.DatabaseName, settings.SystemPromptsContainerName);
             _emailSettingsContainer = _cosmosClient.GetContainer(settings.DatabaseName, settings.EmailSettingsContainerName);
             _recommendationsContainer = _cosmosClient.GetContainer(settings.DatabaseName, settings.RecommendationsContainerName);
+            _personalAccessTokensContainer = _cosmosClient.GetContainer(settings.DatabaseName, settings.PersonalAccessTokensContainerName);
             _encryptionService = encryptionService;
             _logger = logger;
         }
@@ -42,6 +44,7 @@ namespace SecondDiary.Services
             _promptContainer = _cosmosClient.GetContainer(settings.DatabaseName, settings.SystemPromptsContainerName);
             _emailSettingsContainer = _cosmosClient.GetContainer(settings.DatabaseName, settings.EmailSettingsContainerName);
             _recommendationsContainer = _cosmosClient.GetContainer(settings.DatabaseName, settings.RecommendationsContainerName);
+            _personalAccessTokensContainer = _cosmosClient.GetContainer(settings.DatabaseName, settings.PersonalAccessTokensContainerName);
             _encryptionService = encryptionService;
             _logger = logger;
         }
@@ -67,6 +70,9 @@ namespace SecondDiary.Services
 
                 await database.CreateContainerIfNotExistsAsync(_recommendationsContainer.Id, "/userId");
                 _logger.LogInformation($"Container {_recommendationsContainer.Id} initialized");
+
+                await database.CreateContainerIfNotExistsAsync(_personalAccessTokensContainer.Id, "/userId");
+                _logger.LogInformation($"Container {_personalAccessTokensContainer.Id} initialized");
 
                 _logger.LogInformation("Cosmos DB initialization completed successfully");
             }
@@ -348,6 +354,67 @@ namespace SecondDiary.Services
             }
 
             return recommendations;
+        }
+
+        public async Task<PersonalAccessToken> CreatePersonalAccessTokenAsync(PersonalAccessToken token)
+        {
+            ItemResponse<PersonalAccessToken> response = await _personalAccessTokensContainer.CreateItemAsync(token, new PartitionKey(token.UserId));
+            return response.Resource;
+        }
+
+        public async Task<PersonalAccessToken?> GetPersonalAccessTokenByIdAsync(string id)
+        {
+            try
+            {
+                // Since we're using the id as the document ID, we can do a direct read
+                // We need to find which partition it belongs to by querying
+                QueryDefinition queryDefinition = new QueryDefinition(
+                    "SELECT * FROM c WHERE c.id = @id AND c.isActive = true")
+                    .WithParameter("@id", id);
+
+                FeedIterator<PersonalAccessToken> resultSetIterator = _personalAccessTokensContainer.GetItemQueryIterator<PersonalAccessToken>(queryDefinition);
+
+                while (resultSetIterator.HasMoreResults)
+                {
+                    FeedResponse<PersonalAccessToken> response = await resultSetIterator.ReadNextAsync();
+                    PersonalAccessToken? token = response.FirstOrDefault();
+                    if (token != null)
+                        return token;
+                }
+
+                return null;
+            }
+            catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return null;
+            }
+        }
+
+        public async Task<IEnumerable<PersonalAccessToken>> GetPersonalAccessTokensAsync(string userId)
+        {
+            List<PersonalAccessToken> tokens = new List<PersonalAccessToken>();
+            
+            QueryDefinition queryDefinition = new QueryDefinition(
+                "SELECT * FROM c WHERE c.userId = @userId ORDER BY c.createdAt DESC")
+                .WithParameter("@userId", userId);
+
+            FeedIterator<PersonalAccessToken> resultSetIterator = _personalAccessTokensContainer.GetItemQueryIterator<PersonalAccessToken>(
+                queryDefinition,
+                requestOptions: new QueryRequestOptions { PartitionKey = new PartitionKey(userId) }
+            );
+
+            while (resultSetIterator.HasMoreResults)
+            {
+                FeedResponse<PersonalAccessToken> response = await resultSetIterator.ReadNextAsync();
+                tokens.AddRange(response.ToList());
+            }
+
+            return tokens;
+        }
+
+        public async Task DeletePersonalAccessTokenAsync(string id, string userId)
+        {
+            await _personalAccessTokensContainer.DeleteItemAsync<PersonalAccessToken>(id, new PartitionKey(userId));
         }
     }
 }

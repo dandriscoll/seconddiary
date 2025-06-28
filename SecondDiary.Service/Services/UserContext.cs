@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using System.Security.Claims;
 using Microsoft.Identity.Web;
 
 namespace SecondDiary.Services
@@ -27,7 +28,7 @@ namespace SecondDiary.Services
         }
 
         public string? UserId => IsAuthenticated && HasValidAudience
-            ? SanitizeUserId(_encryptionService.Encrypt(_httpContextAccessor.HttpContext?.User.GetObjectId()!))
+            ? GetUserIdFromClaims()
             : null;
 
         public string RequireUserId()
@@ -39,12 +40,26 @@ namespace SecondDiary.Services
             return userId;
         }
 
-        public bool IsAuthenticated => (_httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated ?? false) && HasValidAudience;
+        public bool IsAuthenticated => (_httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated ?? false) && 
+                                       (HasValidAudience || IsPatAuthenticated);
+
+        public bool IsPatAuthenticated
+        {
+            get
+            {
+                string? authMethod = _httpContextAccessor.HttpContext?.User?.FindFirst("auth_method")?.Value;
+                return authMethod == "pat";
+            }
+        }
 
         public bool HasValidAudience
         {
             get
             {
+                // If it's PAT authentication, skip audience validation
+                if (IsPatAuthenticated)
+                    return true;
+
                 var expectedAudience = _configuration["AzureAd:ClientId"];
                 if (string.IsNullOrEmpty(expectedAudience))
                     return false;
@@ -52,6 +67,22 @@ namespace SecondDiary.Services
                 var audienceClaim = _httpContextAccessor.HttpContext?.User?.FindFirst("aud");
                 return audienceClaim != null && audienceClaim.Value == expectedAudience;
             }
+        }
+
+        private string? GetUserIdFromClaims()
+        {
+            if (IsPatAuthenticated)
+            {
+                // For PAT authentication, the user ID is already encrypted and stored in NameIdentifier
+                return _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            }
+            
+            // For JWT authentication, encrypt the object ID
+            string? objectId = _httpContextAccessor.HttpContext?.User.GetObjectId();
+            if (string.IsNullOrEmpty(objectId))
+                return null;
+                
+            return SanitizeUserId(_encryptionService.Encrypt(objectId));
         }
 
         private string SanitizeUserId(string userId)

@@ -1,6 +1,7 @@
 using Newtonsoft.Json;
 using SecondDiary.Models;
 using SecondDiary.Services;
+using SecondDiary.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
@@ -50,7 +51,11 @@ namespace SecondDiary
             // Register services with their interfaces
             services.AddSingleton<IDiaryService, DiaryService>();
             services.AddSingleton<ISystemPromptService, SystemPromptService>();
+            services.AddSingleton<IPersonalAccessTokenService, PersonalAccessTokenService>();
             services.AddSingleton<IUserContext, UserContext>();
+            
+            // Add TimeProvider for PAT authentication
+            services.AddSingleton(TimeProvider.System);
 
             // Configure JWT Bearer Authentication with AAD validation
             services.AddAuthentication(options =>
@@ -114,7 +119,10 @@ namespace SecondDiary
                     }
                 };
 #endif
-            });
+            })
+            .AddScheme<PatAuthenticationSchemeOptions, PatAuthenticationHandler>(
+                PatAuthenticationSchemeOptions.DefaultScheme, 
+                options => { });
 
             // Add authorization policies if needed
             services.AddAuthorization();

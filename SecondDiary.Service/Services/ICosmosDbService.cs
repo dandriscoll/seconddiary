@@ -29,5 +29,11 @@ namespace SecondDiary.Services
         // Recommendations
         Task<Recommendation> CreateRecommendationAsync(Recommendation recommendation);
         Task<IEnumerable<Recommendation>> GetRecentRecommendationsAsync(string userId, int count = 5);
+        
+        // Personal Access Tokens
+        Task<PersonalAccessToken> CreatePersonalAccessTokenAsync(PersonalAccessToken token);
+        Task<PersonalAccessToken?> GetPersonalAccessTokenByIdAsync(string id);
+        Task<IEnumerable<PersonalAccessToken>> GetPersonalAccessTokensAsync(string userId);
+        Task DeletePersonalAccessTokenAsync(string id, string userId);
     }
 }

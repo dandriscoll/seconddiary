@@ -26,7 +26,8 @@
     "DiaryEntriesContainerName": "DiaryEntries",
     "SystemPromptsContainerName": "SystemPrompts",
     "EmailSettingsContainerName": "EmailSettings",
-    "RecommendationsContainerName": "Recommendations"
+    "RecommendationsContainerName": "Recommendations",
+    "PersonalAccessTokensContainerName": "PersonalAccessTokens"
   },
   "Encryption": {
     "Key": "your-32-byte-encryption-key-here"
