@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { AuthenticatedTemplate, UnauthenticatedTemplate, useMsal } from '@azure/msal-react';
 import { AccountInfo, InteractionRequiredAuthError } from '@azure/msal-browser';
 import { ProfileContent } from './components/ProfileContent';
@@ -7,6 +7,7 @@ import { EmailSettings } from './components/EmailSettings';
 import { PersonalAccessTokenManager } from './components/PersonalAccessTokenManager';
 import { MarkdownContent } from './components/MarkdownContent';
 import { loginRequest } from './authConfig';
+import { isMobile } from 'react-device-detect';
 import './index.less';
 
 const App: React.FC = () => {
@@ -24,6 +25,8 @@ const App: React.FC = () => {
   const [showPATManager, setShowPATManager] = useState<boolean>(false);
   const [userEmail, setUserEmail] = useState<string>('');
   const [recommendationData, setRecommendationData] = useState<string | null>(null);
+  const [isRecording, setIsRecording] = useState<boolean>(false);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   // Get active account
   const activeAccount: AccountInfo | null = accounts.length > 0 ? accounts[0] : null;
@@ -264,6 +267,49 @@ const App: React.FC = () => {
         setIsGettingRecommendation(false);
       }
     };    
+
+    const handleSpeechRecognition = (): void => {
+      if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+        console.error('Speech recognition is not supported in this browser.');
+        return;
+      }
+
+      if (!recognitionRef.current) {
+        const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        const recognition = new SpeechRecognition() as SpeechRecognition;
+        recognition.lang = 'en-US';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        recognition.onstart = () => {
+          setIsRecording(true);
+        };
+
+        recognition.onresult = (event: SpeechRecognitionEvent) => {
+          const spokenText = event.results[0][0].transcript;
+          setThought(prev => `${prev} ${spokenText}`.trim());
+        };
+
+        recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+          console.error('Speech recognition error:', event.error);
+          setIsRecording(false);
+        };
+
+        recognition.onend = () => {
+          setIsRecording(false);
+        };
+
+        recognitionRef.current = recognition;
+      }
+
+      const recognition = recognitionRef.current as SpeechRecognition;
+
+      if (isRecording) {
+        recognition.stop();
+      } else {
+        recognition.start();
+      }
+    };
   
   return (
     <div className={`App ${theme}-theme`}>
@@ -350,6 +396,15 @@ const App: React.FC = () => {
                   disabled={isPosting}
                   className="full-width-input"
                 />
+                {isMobile && (
+                  <button 
+                    type="button" 
+                    onClick={handleSpeechRecognition} 
+                    className={`btn ${isRecording ? 'btn-danger' : 'btn-secondary'} speech-button`}
+                  >
+                    {isRecording ? 'Stop speaking' : 'Speak your thought'}
+                  </button>
+                )}
               </div>
               <div className="form-group">
                 <label htmlFor="context">Context (Optional)</label>
