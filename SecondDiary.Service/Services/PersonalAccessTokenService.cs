@@ -9,7 +9,7 @@ namespace SecondDiary.Services
         Task<CreatePersonalAccessTokenResponse> CreateTokenAsync(string userId);
         Task<IEnumerable<PersonalAccessTokenSummary>> GetUserTokensAsync(string userId);
         Task<PersonalAccessToken?> ValidateTokenAsync(string token);
-        Task<bool> RevokeTokenAsync(string userId, string tokenId);
+        Task<bool> RevokeTokenAsync(string tokenId, string userId);
         Task<PersonalAccessToken?> GetTokenAsync(string userId, string tokenId);
     }
 
@@ -103,7 +103,7 @@ namespace SecondDiary.Services
             return storedToken;
         }
 
-        public async Task<bool> RevokeTokenAsync(string userId, string tokenId)
+        public async Task<bool> RevokeTokenAsync(string tokenId, string userId)
         {
             try
             {

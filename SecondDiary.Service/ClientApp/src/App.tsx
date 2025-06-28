@@ -4,6 +4,7 @@ import { AccountInfo, InteractionRequiredAuthError } from '@azure/msal-browser';
 import { ProfileContent } from './components/ProfileContent';
 import { SystemPromptEditor } from './components/SystemPromptEditor';
 import { EmailSettings } from './components/EmailSettings';
+import { PersonalAccessTokenManager } from './components/PersonalAccessTokenManager';
 import { MarkdownContent } from './components/MarkdownContent';
 import { loginRequest } from './authConfig';
 import './index.less';
@@ -20,6 +21,7 @@ const App: React.FC = () => {
   const [tokenLoading, setTokenLoading] = useState<boolean>(false);
   const [showSystemPrompt, setShowSystemPrompt] = useState<boolean>(false);
   const [showEmailSettings, setShowEmailSettings] = useState<boolean>(false);
+  const [showPATManager, setShowPATManager] = useState<boolean>(false);
   const [userEmail, setUserEmail] = useState<string>('');
   const [recommendationData, setRecommendationData] = useState<string | null>(null);
 
@@ -120,6 +122,11 @@ const App: React.FC = () => {
   // Toggle email settings visibility
   const toggleEmailSettings = (): void => {
     setShowEmailSettings(prev => !prev);
+  };
+
+  // Toggle PAT manager visibility
+  const togglePATManager = (): void => {
+    setShowPATManager(prev => !prev);
   };
 
   // SignInButton functionality
@@ -290,6 +297,13 @@ const App: React.FC = () => {
                     >
                       {showEmailSettings ? 'Hide Email Settings' : 'Show Email Settings'}
                     </button>
+                    
+                    <button 
+                      onClick={togglePATManager}
+                      className="btn btn-outline-secondary me-2"
+                    >
+                      {showPATManager ? 'Hide PAT Manager' : 'Manage PATs'}
+                    </button>
                   </>
                 )}
                 <button className="btn btn-secondary" onClick={handleSignOut}>
@@ -315,6 +329,7 @@ const App: React.FC = () => {
             <>
               {showSystemPrompt && <SystemPromptEditor token={token} />}
               {showEmailSettings && <EmailSettings token={token} userEmail={userEmail} />}
+              {showPATManager && <PersonalAccessTokenManager token={token} />}
             </>
           ) : !tokenLoading && (
             <p>Token is missing. Please try signing in again.</p>

@@ -222,7 +222,7 @@ namespace SecondDiary.Tests.Services
                 .Returns(Task.CompletedTask);
 
             // Act
-            bool result = await _service.RevokeTokenAsync(TestUserId, tokenId);
+            bool result = await _service.RevokeTokenAsync(tokenId, TestUserId);
 
             // Assert
             Assert.True(result);
@@ -243,7 +243,7 @@ namespace SecondDiary.Tests.Services
                 .ThrowsAsync(new Exception("Database error"));
 
             // Act
-            bool result = await _service.RevokeTokenAsync(TestUserId, tokenId);
+            bool result = await _service.RevokeTokenAsync(tokenId, TestUserId);
 
             // Assert
             Assert.False(result);

@@ -801,6 +801,134 @@ button.recommendation-button {
   }
 }
 
+// Personal Access Token Manager styles
+.pat-manager {
+  background-color: rgba(0, 0, 0, 0.02);
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  
+  .pat-manager-header {
+    margin-bottom: 20px;
+    
+    h3 {
+      margin-bottom: 8px;
+      color: @primary-color;
+    }
+    
+    .pat-description {
+      color: #666;
+      font-size: 0.9em;
+      margin-bottom: 0;
+    }
+  }
+  
+  .pat-create-section {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 20px;
+  }
+  
+  .pat-list-section {
+    h4 {
+      margin-bottom: 15px;
+      font-size: 1.1em;
+    }
+    
+    .table {
+      margin-bottom: 0;
+      
+      th {
+        font-weight: 600;
+        border-top: none;
+      }
+      
+      code {
+        background-color: #f8f9fa;
+        padding: 2px 4px;
+        border-radius: 3px;
+        font-size: 0.85em;
+      }
+    }
+  }
+  
+  .alert {
+    border-radius: 6px;
+    
+    &.alert-warning {
+      h5 {
+        margin-bottom: 10px;
+      }
+      
+      .input-group {
+        input {
+          background-color: #fff;
+          border: 1px solid #fdbf47;
+        }
+      }
+    }
+  }
+}
+
+// Dark theme overrides for PAT manager
+.dark-theme {
+  .pat-manager {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: #555;
+    
+    .pat-manager-header {
+      .pat-description {
+        color: #bbb;
+      }
+    }
+    
+    .pat-create-section {
+      border-bottom-color: #444;
+    }
+    
+    .table {
+      color: @text-color-dark;
+      
+      th, td {
+        border-color: #444;
+      }
+      
+      code {
+        background-color: #333;
+        color: #f8f9fa;
+      }
+    }
+    
+    .alert {
+      &.alert-warning {
+        background-color: #664d03;
+        border-color: #997404;
+        color: #ffecb5;
+        
+        .input-group {
+          input {
+            background-color: #2d2d2d;
+            border-color: #997404;
+            color: #fff;
+          }
+        }
+      }
+      
+      &.alert-info {
+        background-color: #055160;
+        border-color: #087990;
+        color: #b8ecf3;
+      }
+      
+      &.alert-danger {
+        background-color: #721c24;
+        border-color: #a52834;
+        color: #f1aeb5;
+      }
+    }
+  }
+}
+
 // Mobile optimization
 @media (max-width: 768px) {
   // ...existing code...
