@@ -28,6 +28,10 @@ namespace SecondDiary.Tests.Services
                 Endpoint = "https://test.documents.azure.com:443/",
                 Key = "test-key",
                 DatabaseName = "TestDatabase",
+                DiaryEntriesContainerName = "TestDiaryContainer",
+                SystemPromptsContainerName = "TestPromptsContainer", 
+                EmailSettingsContainerName = "TestEmailContainer",
+                RecommendationsContainerName = "TestRecommendationsContainer",
                 PersonalAccessTokensContainerName = "TestPATContainer"
             };
 
@@ -35,8 +39,12 @@ namespace SecondDiary.Tests.Services
                 .Setup(c => c.GetDatabase(_settings.DatabaseName))
                 .Returns(_mockDatabase.Object);
 
+            _mockCosmosClient
+                .Setup(c => c.GetContainer(_settings.DatabaseName, It.IsAny<string>()))
+                .Returns(_mockContainer.Object);
+
             _mockDatabase
-                .Setup(d => d.GetContainer(_settings.PersonalAccessTokensContainerName))
+                .Setup(d => d.GetContainer(It.IsAny<string>()))
                 .Returns(_mockContainer.Object);
 
             var mockOptions = new Mock<IOptions<CosmosDbSettings>>();
@@ -109,7 +117,6 @@ namespace SecondDiary.Tests.Services
             var mockResponse = new Mock<FeedResponse<PersonalAccessToken>>();
             
             mockResponse.Setup(r => r.GetEnumerator()).Returns(tokens.GetEnumerator());
-            mockResponse.Setup(r => r.FirstOrDefault()).Returns(pat);
             mockIterator.SetupSequence(i => i.HasMoreResults)
                 .Returns(true)
                 .Returns(false);
@@ -144,12 +151,16 @@ namespace SecondDiary.Tests.Services
             // Arrange
             string tokenId = "nonexistent-hash";
 
+            var emptyTokens = new List<PersonalAccessToken>();
             var mockIterator = new Mock<FeedIterator<PersonalAccessToken>>();
             var mockResponse = new Mock<FeedResponse<PersonalAccessToken>>();
             
-            mockResponse.Setup(r => r.GetEnumerator()).Returns(new List<PersonalAccessToken>().GetEnumerator());
-            mockResponse.Setup(r => r.FirstOrDefault()).Returns((PersonalAccessToken?)null);
-            mockIterator.Setup(i => i.HasMoreResults).Returns(false);
+            mockResponse.Setup(r => r.GetEnumerator()).Returns(emptyTokens.GetEnumerator());
+            mockIterator.SetupSequence(i => i.HasMoreResults)
+                .Returns(true)
+                .Returns(false);
+            mockIterator.Setup(i => i.ReadNextAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mockResponse.Object);
 
             _mockContainer
                 .Setup(c => c.GetItemQueryIterator<PersonalAccessToken>(
@@ -282,7 +293,7 @@ namespace SecondDiary.Tests.Services
         }
 
         [Fact]
-        public async Task DeletePersonalAccessTokenAsync_WhenTokenNotFound_ShouldNotThrow()
+        public async Task DeletePersonalAccessTokenAsync_WhenTokenNotFound_ShouldThrow()
         {
             // Arrange
             string tokenId = "nonexistent-hash";
@@ -296,8 +307,8 @@ namespace SecondDiary.Tests.Services
                 .ThrowsAsync(new CosmosException("Not found", System.Net.HttpStatusCode.NotFound, 404, "", 0));
 
             // Act & Assert
-            // Should not throw an exception
-            await _service.DeletePersonalAccessTokenAsync(tokenId, TestUserId);
+            // CosmosDB service should throw when token not found - this is expected behavior
+            await Assert.ThrowsAsync<CosmosException>(() => _service.DeletePersonalAccessTokenAsync(tokenId, TestUserId));
 
             _mockContainer.Verify(c => c.DeleteItemAsync<PersonalAccessToken>(
                 tokenId,

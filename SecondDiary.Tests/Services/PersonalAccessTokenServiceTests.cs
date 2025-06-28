@@ -24,28 +24,31 @@ namespace SecondDiary.Tests.Services
         public async Task CreateTokenAsync_ShouldCreateValidToken()
         {
             // Arrange
-            var expectedToken = new PersonalAccessToken
-            {
-                Id = "test-hash",
-                UserId = TestUserId,
-                TokenPrefix = "p_someprefix",
-                CreatedAt = DateTime.UtcNow,
-                IsActive = true
-            };
+            PersonalAccessToken? capturedToken = null;
+            var expectedCreatedAt = DateTime.UtcNow;
 
             _mockCosmosDbService
                 .Setup(x => x.CreatePersonalAccessTokenAsync(It.IsAny<PersonalAccessToken>()))
-                .ReturnsAsync(expectedToken);
+                .Callback<PersonalAccessToken>(token => capturedToken = token)
+                .ReturnsAsync((PersonalAccessToken token) => new PersonalAccessToken
+                {
+                    Id = token.Id,
+                    UserId = token.UserId,
+                    TokenPrefix = token.TokenPrefix,
+                    CreatedAt = token.CreatedAt,
+                    IsActive = token.IsActive
+                });
 
             // Act
             CreatePersonalAccessTokenResponse result = await _service.CreateTokenAsync(TestUserId);
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(expectedToken.Id, result.Id);
+            Assert.NotNull(capturedToken);
+            Assert.Equal(capturedToken.Id, result.Id);
             Assert.StartsWith("p_", result.Token);
-            Assert.Equal(expectedToken.TokenPrefix, result.TokenPrefix);
-            Assert.Equal(expectedToken.CreatedAt, result.CreatedAt);
+            Assert.Equal(capturedToken.TokenPrefix, result.TokenPrefix);
+            Assert.Equal(capturedToken.CreatedAt, result.CreatedAt);
             Assert.Contains("This token will only be shown once", result.Warning);
 
             _mockCosmosDbService.Verify(

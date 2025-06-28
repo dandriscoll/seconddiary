@@ -21,6 +21,7 @@ namespace SecondDiary.Tests.Middleware
         private readonly Mock<UrlEncoder> _mockUrlEncoder;
         private readonly DefaultHttpContext _httpContext;
         private readonly PatAuthenticationHandler _handler;
+        private readonly AuthenticationScheme _scheme;
         private const string TestUserId = "test-user-123";
 
         public PatAuthenticationHandlerTests()
@@ -35,10 +36,21 @@ namespace SecondDiary.Tests.Middleware
             _mockOptions.Setup(x => x.CurrentValue)
                 .Returns(new PatAuthenticationSchemeOptions());
             
+            _mockOptions.Setup(x => x.Get(It.IsAny<string>()))
+                .Returns(new PatAuthenticationSchemeOptions());
+            
+            // Fix: Don't mock the extension method, mock the base method instead
+            _mockLoggerFactory.Setup(x => x.CreateLogger(typeof(PatAuthenticationHandler).FullName!))
+                .Returns(_mockLogger.Object);
+            
             _mockLoggerFactory.Setup(x => x.CreateLogger(It.IsAny<string>()))
                 .Returns(_mockLogger.Object);
 
-            var scheme = new AuthenticationScheme(
+            // Mock the URL encoder properly
+            _mockUrlEncoder.Setup(x => x.Encode(It.IsAny<string>()))
+                .Returns<string>(s => s);
+
+            _scheme = new AuthenticationScheme(
                 PatAuthenticationSchemeOptions.DefaultScheme,
                 PatAuthenticationSchemeOptions.DefaultScheme,
                 typeof(PatAuthenticationHandler));
@@ -48,15 +60,18 @@ namespace SecondDiary.Tests.Middleware
                 _mockLoggerFactory.Object,
                 _mockUrlEncoder.Object,
                 _mockPatService.Object);
+        }
 
-            // Initialize the handler with a scheme and context
-            _handler.InitializeAsync(scheme, _httpContext).GetAwaiter().GetResult();
+        private async Task InitializeHandlerAsync()
+        {
+            await _handler.InitializeAsync(_scheme, _httpContext);
         }
 
         [Fact]
         public async Task HandleAuthenticateAsync_WithNoAuthorizationHeader_ShouldReturnNoResult()
         {
             // Arrange
+            await InitializeHandlerAsync();
             // No Authorization header set
 
             // Act
@@ -72,6 +87,7 @@ namespace SecondDiary.Tests.Middleware
         public async Task HandleAuthenticateAsync_WithNonBearerToken_ShouldReturnNoResult()
         {
             // Arrange
+            await InitializeHandlerAsync();
             _httpContext.Request.Headers["Authorization"] = "Basic sometoken";
 
             // Act
@@ -87,6 +103,7 @@ namespace SecondDiary.Tests.Middleware
         public async Task HandleAuthenticateAsync_WithNonPatToken_ShouldReturnNoResult()
         {
             // Arrange
+            await InitializeHandlerAsync();
             _httpContext.Request.Headers["Authorization"] = "Bearer someothertoken";
 
             // Act
@@ -102,6 +119,7 @@ namespace SecondDiary.Tests.Middleware
         public async Task HandleAuthenticateAsync_WithValidPatToken_ShouldReturnSuccess()
         {
             // Arrange
+            await InitializeHandlerAsync();
             string token = "p_validtoken123";
             _httpContext.Request.Headers["Authorization"] = $"Bearer {token}";
 
@@ -157,6 +175,7 @@ namespace SecondDiary.Tests.Middleware
         public async Task HandleAuthenticateAsync_WithInvalidPatToken_ShouldReturnFail()
         {
             // Arrange
+            await InitializeHandlerAsync();
             string token = "p_invalidtoken123";
             _httpContext.Request.Headers["Authorization"] = $"Bearer {token}";
 
@@ -179,6 +198,7 @@ namespace SecondDiary.Tests.Middleware
         public async Task HandleAuthenticateAsync_WhenValidationThrows_ShouldReturnFail()
         {
             // Arrange
+            await InitializeHandlerAsync();
             string token = "p_errortoken123";
             _httpContext.Request.Headers["Authorization"] = $"Bearer {token}";
 
@@ -201,6 +221,7 @@ namespace SecondDiary.Tests.Middleware
         public async Task HandleAuthenticateAsync_WithBearerTokenWithSpaces_ShouldTrimAndProcess()
         {
             // Arrange
+            await InitializeHandlerAsync();
             string token = "p_tokenwithtrim";
             _httpContext.Request.Headers["Authorization"] = $"Bearer   {token}   ";
 
@@ -232,6 +253,7 @@ namespace SecondDiary.Tests.Middleware
         public async Task HandleAuthenticateAsync_WithInvalidAuthorizationHeader_ShouldReturnNoResult(string authHeader)
         {
             // Arrange
+            await InitializeHandlerAsync();
             _httpContext.Request.Headers["Authorization"] = authHeader;
 
             // Act
@@ -247,6 +269,7 @@ namespace SecondDiary.Tests.Middleware
         public async Task HandleAuthenticateAsync_WithCaseInsensitiveBearerToken_ShouldWork()
         {
             // Arrange
+            await InitializeHandlerAsync();
             string token = "p_casetest123";
             _httpContext.Request.Headers["Authorization"] = $"bearer {token}";
 
