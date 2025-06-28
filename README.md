@@ -223,7 +223,7 @@ Create an `appsettings.Development.json` file based on the template with the fol
 
 3. Publish the application:
    ```
-   dotnet publish SecondDiary.API/SecondDiary.API.csproj -c Release -o ./publish
+   dotnet publish SecondDiary.Service/SecondDiary.Service.csproj -c Release -o ./publish
    az webapp deployment source config-zip --name SecondDiary --resource-group SecondDiaryResourceGroup --src ./publish.zip
    ```
 
